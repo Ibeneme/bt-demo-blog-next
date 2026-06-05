@@ -1,10 +1,14 @@
 // app/api/og/blog/[slug]/route.ts
 import { supabase } from "@/configs/supabase";
 import { ImageResponse } from "next/og";
+import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
-export async function GET({ params }: { params: Promise<{ slug: string }> }) {
+export async function GET(
+  request: NextRequest, // ← Fixed: Proper typing
+  { params }: { params: Promise<{ slug: string }> }
+) {
   try {
     const { slug } = await params;
 
@@ -28,7 +32,7 @@ export async function GET({ params }: { params: Promise<{ slug: string }> }) {
               objectFit: "cover",
             }}
           />
-          {/* Light overlay for better look on social media */}
+          {/* Light overlay for better social media appearance */}
           <div
             style={{
               position: "absolute",
@@ -42,6 +46,8 @@ export async function GET({ params }: { params: Promise<{ slug: string }> }) {
       { width: 1200, height: 630 }
     );
   } catch (e) {
+    console.error("OG Image Error:", e);
+
     return new ImageResponse(
       (
         <div
