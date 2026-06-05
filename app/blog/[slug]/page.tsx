@@ -53,7 +53,6 @@ export default function BlogDetails() {
 
         if (articleError) throw articleError;
 
-
         if (currentArticle) {
           const words =
             currentArticle.content?.replace(/<[^>]*>/g, "").split(/\s+/)
@@ -86,14 +85,11 @@ export default function BlogDetails() {
 
           setPost(loadedPost);
 
-          const { data: siblingArticles, error: siblingError } = await supabase
+          const { data: siblingArticles } = await supabase
             .from("articles")
             .select("*")
             .neq("id", currentArticle.id)
             .limit(6);
-
-
-          if (siblingError) throw siblingError;
 
           if (siblingArticles) {
             const formattedSiblings: BlogPost[] = siblingArticles.map(
@@ -182,14 +178,8 @@ export default function BlogDetails() {
 
   const pageUrl = `https://bt-demo-blog.vercel.app/blog/${post.slug}`;
 
-  // Dynamic OG Image URL
-  const ogImageUrl = `https://bt-demo-blog.vercel.app/api/og/blog/${
-    post.slug
-  }?title=${encodeURIComponent(post.title)}&excerpt=${encodeURIComponent(
-    post.excerpt || ""
-  )}&category=${encodeURIComponent(post.category)}&image=${encodeURIComponent(
-    post.image
-  )}`;
+  // 🔥 Clean Dynamic OG Image URL (using slug only)
+  const ogImageUrl = `https://bt-demo-blog.vercel.app/api/og/blog/${post.slug}`;
 
   return (
     <div className="bg-[#F8F7F4] min-h-screen font-['Rethink_Sans']">
