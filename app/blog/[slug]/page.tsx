@@ -79,7 +79,7 @@ export default function BlogDetails() {
             readTime: computedReadTime,
             image:
               currentArticle.image_url ||
-              "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80",
             tags: currentArticle.tags || [],
           };
 
@@ -118,7 +118,7 @@ export default function BlogDetails() {
                   ) + " min read",
                 image:
                   article.image_url ||
-                  "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80",
+                  "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80",
               })
             );
 
@@ -167,6 +167,7 @@ export default function BlogDetails() {
         <span>Loading article...</span>
       </div>
     );
+
   if (!post)
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F7F4] gap-6">
@@ -177,33 +178,76 @@ export default function BlogDetails() {
       </div>
     );
 
+  const pageUrl = `https://bt-demo-blog.vercel.app/blog/${post.slug}`;
+  const ogImage = post.image; // Ensure this is a high-quality image (ideally 1200x630)
+
   return (
     <div className="bg-[#F8F7F4] min-h-screen font-['Rethink_Sans']">
-      <SEO title={post.title} description={post.excerpt} image={post.image} />
+      {/* Enhanced SEO Component */}
+      <SEO
+        title={post.title}
+        description={post.excerpt}
+        image={ogImage}
+        url={pageUrl}
+      />
+
       <Helmet>
         <title>{post.title} | Blessing Attorney</title>
         <meta name="description" content={post.excerpt} />
-        <link
-          rel="canonical"
-          href={`https://bt-demo-blog.vercel.app/blog/${post.slug}`}
-        />
+        <link rel="canonical" href={pageUrl} />
+
+        {/* Open Graph / Social Sharing Meta Tags */}
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.excerpt} />
-        <meta property="og:image" content={post.image} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={post.title} />
         <meta property="og:type" content="article" />
-        <meta
-          property="og:url"
-          content={`https://bt-demo-blog.vercel.app/blog/${post.slug}`}
-        />
+        <meta property="og:url" content={pageUrl} />
+        <meta property="og:site_name" content="Blessing Attorney" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={post.title} />
+        <meta name="twitter:description" content={post.excerpt} />
+        <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:image:alt" content={post.title} />
+
+        {/* Additional SEO */}
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="Blessing Attorney" />
       </Helmet>
 
       <style>{`
-      .
-        .blog-content h2 { font-size: 1.75rem; font-weight: 800; color: #4F2A7E; margin-top: 2rem; margin-bottom: 1rem; padding-left: 0.75rem; border-left: 4px solid #D4AF37; }
-        @media (min-width: 768px) { .blog-content h2 { font-size: 2.2rem; padding-left: 1rem; } }
-        .blog-content p { line-height: 1.8; margin-bottom: 1.5rem; font-size: 1rem; color: #374151; }
-        @media (min-width: 768px) { .blog-content p { font-size: 1.125rem; line-height: 2.2; } }
-        .blog-content p:first-of-type::first-letter { float: left; font-size: 3.5rem; line-height: 0.75; color: #4F2A7E; font-family: Georgia, serif; }
+        .blog-content h2 { 
+          font-size: 1.75rem; 
+          font-weight: 800; 
+          color: #4F2A7E; 
+          margin-top: 2rem; 
+          margin-bottom: 1rem; 
+          padding-left: 0.75rem; 
+          border-left: 4px solid #D4AF37; 
+        }
+        @media (min-width: 768px) { 
+          .blog-content h2 { font-size: 2.2rem; padding-left: 1rem; } 
+        }
+        .blog-content p { 
+          line-height: 1.8; 
+          margin-bottom: 1.5rem; 
+          font-size: 1rem; 
+          color: #374151; 
+        }
+        @media (min-width: 768px) { 
+          .blog-content p { font-size: 1.125rem; line-height: 2.2; } 
+        }
+        .blog-content p:first-of-type::first-letter { 
+          float: left; 
+          font-size: 3.5rem; 
+          line-height: 0.75; 
+          color: #4F2A7E; 
+          font-family: Georgia, serif; 
+        }
       `}</style>
 
       <section className="relative h-[60vh] md:h-[75vh] overflow-hidden">
@@ -255,6 +299,7 @@ export default function BlogDetails() {
               ))}
             </div>
           )}
+
           <div className="flex items-center gap-4 mb-10">
             <span className="text-sm uppercase text-gray-500">
               {copied ? "Copied!" : "Share"}
@@ -270,12 +315,13 @@ export default function BlogDetails() {
           </div>
 
           <div className="w-full max-w-full overflow-hidden">
-          <div
-            className="blog-content prose prose-lg max-w-none mx-[-88px]"
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(post.content || post.excerpt),
-            }}
-          /></div>
+            <div
+              className="blog-content prose prose-lg max-w-none mx-[-88px]"
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(post.content || post.excerpt),
+              }}
+            />
+          </div>
         </motion.article>
       </main>
 
