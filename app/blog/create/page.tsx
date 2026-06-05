@@ -261,7 +261,7 @@ export default function CreateArticle() {
                 type="text"
                 required
                 placeholder="e.g. Navigating M&A in 2026"
-                className="w-full px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-gray-200 focus:border-[#4F2A7E] outline-none transition-all text-sm sm:text-base"
+                className="w-full text-[#000] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-gray-200 focus:border-[#4F2A7E] outline-none transition-all text-sm sm:text-base"
                 value={formData.title}
                 onChange={(e) => {
                   const newTitle = e.target.value;
@@ -302,7 +302,7 @@ export default function CreateArticle() {
                 Category
               </label>
               <select
-                className="w-full px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-gray-200 focus:border-[#4F2A7E] outline-none transition-all bg-white text-sm sm:text-base"
+                className="w-full text-[#000] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-gray-200 focus:border-[#4F2A7E] outline-none transition-all bg-white text-sm sm:text-base"
                 value={formData.category}
                 onChange={(e) =>
                   setFormData({ ...formData, category: e.target.value })
@@ -323,7 +323,7 @@ export default function CreateArticle() {
             <textarea
               required
               placeholder="A brief summary for the blog feed..."
-              className="w-full px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-gray-200 focus:border-[#4F2A7E] outline-none transition-all h-24 text-sm sm:text-base"
+              className="w-full text-[#000] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-gray-200 focus:border-[#4F2A7E] outline-none transition-all h-24 text-sm sm:text-base"
               value={formData.excerpt}
               onChange={(e) => {
                 const newExcerpt = e.target.value;
@@ -461,7 +461,7 @@ export default function CreateArticle() {
                 <input
                   type="text"
                   placeholder="Custom <title> tag text..."
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white outline-none transition-all text-sm"
+                  className="w-full text-[#000] px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white outline-none transition-all text-sm"
                   value={formData.metaTitle}
                   onChange={(e) => {
                     setIsMetaTitleCustomized(e.target.value.trim() !== "");
@@ -478,7 +478,7 @@ export default function CreateArticle() {
                 <input
                   type="text"
                   placeholder="e.g. your-article-url"
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white outline-none transition-all text-sm"
+                  className="w-full text-[#000] px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white outline-none transition-all text-sm"
                   value={formData.slug}
                   onChange={(e) => {
                     const manualSlug = e.target.value;
@@ -529,7 +529,7 @@ export default function CreateArticle() {
               <textarea
                 maxLength={160}
                 placeholder="Recommended maximum structure length: 160 characters..."
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white outline-none transition-all h-20 text-sm"
+                className="w-full text-[#000] px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white outline-none transition-all h-20 text-sm"
                 value={formData.metaDescription}
                 onChange={(e) => {
                   setIsMetaDescCustomized(e.target.value.trim() !== "");
@@ -546,7 +546,7 @@ export default function CreateArticle() {
               <input
                 type="url"
                 placeholder="https://example.com/original-source-link"
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white outline-none transition-all text-sm"
+                className="w-full text-[#000] px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white outline-none transition-all text-sm"
                 value={formData.canonicalUrl}
                 onChange={(e) =>
                   setFormData({ ...formData, canonicalUrl: e.target.value })
@@ -568,11 +568,11 @@ export default function CreateArticle() {
                 className="hidden"
               />
               {ogImagePreview ? (
-                <div className="relative rounded-xl overflow-hidden border border-gray-200 h-32 w-full max-w-md bg-white">
+                <div className="relative rounded-xl overflow-hidden border border-gray-200 h-32 w-full text-[#000] max-w-md bg-white">
                   <img
                     src={ogImagePreview}
                     alt="OG Preview"
-                    className="w-full h-full object-cover"
+                    className="w-full text-[#000] h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                     <button
@@ -605,7 +605,7 @@ export default function CreateArticle() {
               </label>
               <textarea
                 placeholder={`{\n  "@context": "https://schema.org",\n  "@type": "NewsArticle"\n}`}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white font-mono outline-none transition-all h-32 text-xs leading-normal"
+                className="w-full text-[#000] px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white font-mono outline-none transition-all h-32 text-xs leading-normal"
                 value={formData.structuredData}
                 onChange={(e) => {
                   setIsSchemaCustomized(e.target.value.trim() !== "");
@@ -638,11 +638,11 @@ export default function CreateArticle() {
             />
 
             {imagePreview ? (
-              <div className="relative group rounded-2xl sm:rounded-3xl overflow-hidden border border-gray-100 h-48 sm:h-64 w-full">
+              <div className="relative group rounded-2xl sm:rounded-3xl overflow-hidden border border-gray-100 h-48 sm:h-64 w-full text-[#000]">
                 <img
                   src={imagePreview}
                   alt="Preview"
-                  className="w-full h-full object-cover"
+                  className="w-full text-[#000] h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <button
@@ -674,7 +674,7 @@ export default function CreateArticle() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-[#4F2A7E] text-white py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:bg-[#3A1F5E] transition-all disabled:opacity-70 shadow-lg shadow-[#4F2A7E]/10"
+            className="w-full text-[#000] flex items-center justify-center gap-3 bg-[#4F2A7E] text-white py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:bg-[#3A1F5E] transition-all disabled:opacity-70 shadow-lg shadow-[#4F2A7E]/10"
           >
             {loading ? (
               <Loader2 className="animate-spin" size={22} />
@@ -703,7 +703,7 @@ export default function CreateArticle() {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100 z-10"
+              className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full text-[#000] p-8 text-center border border-gray-100 z-10"
             >
               {modalType === "success" ? (
                 <>
@@ -718,7 +718,7 @@ export default function CreateArticle() {
                   </p>
                   <button
                     onClick={handleModalClose}
-                    className="w-full py-3.5 bg-[#4F2A7E] text-white rounded-xl font-bold text-sm"
+                    className="w-full text-[#000] py-3.5 bg-[#4F2A7E] text-white rounded-xl font-bold text-sm"
                   >
                     Go to Insights Feed
                   </button>
@@ -736,7 +736,7 @@ export default function CreateArticle() {
                   </p>
                   <button
                     onClick={handleModalClose}
-                    className="w-full py-3.5 bg-gray-800 text-white rounded-xl font-bold text-sm"
+                    className="w-full text-[#000] py-3.5 bg-gray-800 text-white rounded-xl font-bold text-sm"
                   >
                     Dismiss and Fix
                   </button>
