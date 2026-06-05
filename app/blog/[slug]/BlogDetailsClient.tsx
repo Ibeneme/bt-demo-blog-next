@@ -10,6 +10,7 @@ import {
   Share2,
   Check,
   Loader2,
+  Edit3, // ← New icon for Edit
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "../../../configs/supabase";
@@ -185,7 +186,7 @@ export default function BlogDetailsClient({ slug }: BlogDetailsClientProps) {
 
   return (
     <div className="bg-[#F8F7F4] min-h-screen font-['Rethink_Sans']">
-      {/* Client-side meta fallback (helpful for hydration) */}
+      {/* Client-side meta fallback */}
       <meta property="og:title" content={post.title} />
       <meta property="og:description" content={post.excerpt} />
       <meta property="og:image" content={post.image} />
@@ -272,6 +273,7 @@ export default function BlogDetailsClient({ slug }: BlogDetailsClientProps) {
             </div>
           )}
 
+          {/* Share + Edit Buttons */}
           <div className="flex items-center gap-4 mb-10">
             <span className="text-sm uppercase text-gray-500">
               {copied ? "Copied!" : "Share"}
@@ -284,6 +286,15 @@ export default function BlogDetailsClient({ slug }: BlogDetailsClientProps) {
             >
               {copied ? <Check size={20} /> : <Share2 size={20} />}
             </button>
+
+            {/* NEW: Edit SEO Button */}
+            <Link
+              href={`/blog/${post.slug}/edit`}
+              className="ml-auto flex items-center gap-2 bg-[#4F2A7E] hover:bg-[#3A1F5E] text-white px-5 py-3 rounded-2xl font-medium transition-all"
+            >
+              <Edit3 size={20} />
+              Edit SEO
+            </Link>
           </div>
 
           <div className="w-full max-w-full overflow-hidden">
