@@ -5,9 +5,12 @@ export const runtime = "edge";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    // We still need to await params for Next.js 15+ compatibility
+    await params; // Ignore the actual value since we use query params
+
     const { searchParams } = new URL(request.url);
 
     const title = searchParams.get("title") || "Blessing Attorney Blog";
