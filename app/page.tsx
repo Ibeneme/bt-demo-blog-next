@@ -10,8 +10,8 @@ import {
   Trash2,
   AlertTriangle,
 } from "lucide-react";
-import Link from "next/link"; // For navigation
-import blogData from "../data/blogPosts.json"; // Retained solely for sidebar categories layout stability
+import Link from "next/link";
+import blogData from "../data/blogPosts.json";
 import { supabase } from "../configs/supabase";
 
 interface BlogPost {
@@ -64,7 +64,6 @@ const BlogCard: React.FC<BlogCardProps> = ({
         {category}
       </div>
 
-      {/* Delete Button Option */}
       <button
         onClick={() => onInitiateDelete(id, title)}
         disabled={isDeleting}
@@ -120,23 +119,24 @@ export default function BlessingAttorneyBlog() {
   const [loadingSupabase, setLoadingSupabase] = useState(true);
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
 
-  // Custom Confirmation Modal Context States
   const [modalOpen, setModalOpen] = useState(false);
   const [targetId, setTargetId] = useState<number | string | null>(null);
   const [targetTitle, setTargetTitle] = useState("");
 
-  // Core Function to Fetch Data exclusively from Supabase
   const fetchSupabaseArticles = async () => {
     try {
       setLoadingSupabase(true);
+      console.log("📡 Fetching all articles from Supabase...");
+
       const { data, error } = await supabase
         .from("articles")
         .select("*")
         .order("created_at", { ascending: false });
-        console.warn(data, 'currentArticle')
+
       if (error) throw error;
 
       if (data) {
+        console.log(`✅ Loaded ${data.length} articles from database`);
         const formattedSupabasePosts: BlogPost[] = data.map((article: any) => {
           const words =
             article.content?.replace(/<[^>]*>/g, "").split(/\s+/).length || 0;
@@ -169,25 +169,23 @@ export default function BlessingAttorneyBlog() {
         setAllPosts(formattedSupabasePosts);
       }
     } catch (err) {
-      console.error("Error pulling database articles:", err);
+      console.error("❌ Error pulling database articles:", err);
     } finally {
       setLoadingSupabase(false);
     }
   };
 
-  // Open the custom confirmation modal
   const handleInitiateDelete = (id: number | string, title: string) => {
     setTargetId(id);
     setTargetTitle(title);
     setModalOpen(true);
   };
 
-  // Execute actual database removal
   const handleConfirmDelete = async () => {
     if (!targetId) return;
 
     const idToDelete = targetId;
-    setModalOpen(false); // Close Modal immediately
+    setModalOpen(false);
     setDeletingId(idToDelete);
 
     try {
@@ -199,8 +197,9 @@ export default function BlessingAttorneyBlog() {
       if (error) throw error;
 
       setAllPosts((prev) => prev.filter((post) => post.id !== idToDelete));
+      console.log("🗑️ Article deleted successfully");
     } catch (err: any) {
-      console.error("Failed to delete records:", err.message);
+      console.error("❌ Failed to delete article:", err.message);
       alert("Could not remove article: " + err.message);
     } finally {
       setDeletingId(null);
@@ -245,7 +244,6 @@ export default function BlessingAttorneyBlog() {
       {/* Main Content */}
       <main className="px-8 md:px-16 py-20">
         <div className="grid lg:grid-cols-12 gap-12">
-          {/* Blog Grid */}
           <div className="lg:col-span-8">
             <div className="flex justify-between items-end mb-12">
               <h3 className="text-4xl font-bold text-[#4F2A7E]">
@@ -289,12 +287,10 @@ export default function BlessingAttorneyBlog() {
 
           {/* Sidebar */}
           <aside className="lg:col-span-4 space-y-12">
-            {/* Most Read */}
             <div className="bg-white p-10 rounded-3xl border border-gray-100">
               <h4 className="font-bold text-2xl text-[#4F2A7E] mb-8">
                 Most Read
               </h4>
-
               <ul className="space-y-8">
                 {allPosts.slice(0, 3).map((post) => (
                   <li
@@ -308,7 +304,6 @@ export default function BlessingAttorneyBlog() {
                       <p className="font-semibold leading-tight text-lg group-hover:text-[#4F2A7E]">
                         {post.title}
                       </p>
-
                       <p className="text-sm text-gray-500 mt-3">
                         {post.date} • {post.readTime}
                       </p>
@@ -318,34 +313,28 @@ export default function BlessingAttorneyBlog() {
               </ul>
             </div>
 
-            {/* Newsletter */}
             <div className="bg-gradient-to-br from-[#4F2A7E] to-[#2C1847] text-white p-10 rounded-3xl">
               <h4 className="font-bold text-3xl mb-4">Stay Legally Ahead</h4>
-
               <p className="text-white/80 mb-8">
                 Monthly insights on emerging laws, compliance, and strategic
                 risk management.
               </p>
-
               <div className="space-y-4">
                 <input
                   type="email"
                   placeholder="Your professional email"
                   className="w-full px-6 py-4 rounded-2xl bg-white/10 border border-white/20 placeholder:text-white/60 focus:outline-none focus:border-[#D4AF37]"
                 />
-
                 <button className="w-full bg-[#D4AF37] hover:bg-white text-[#4F2A7E] font-bold py-4 rounded-2xl transition-all">
                   SUBSCRIBE NOW
                 </button>
               </div>
             </div>
 
-            {/* Practice Areas */}
             <div className="bg-white p-10 rounded-3xl border border-gray-100">
               <h4 className="font-bold text-2xl text-[#4F2A7E] mb-8">
                 Practice Areas
               </h4>
-
               <div className="flex flex-wrap gap-3">
                 {practiceAreas.map((area) => (
                   <div
@@ -361,11 +350,9 @@ export default function BlessingAttorneyBlog() {
         </div>
       </main>
 
-      {/* --- PREMIUM ANIMATED DELETE CONFIRMATION MODAL --- */}
       <AnimatePresence>
         {modalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop layer */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
@@ -374,7 +361,6 @@ export default function BlessingAttorneyBlog() {
               onClick={() => setModalOpen(false)}
             />
 
-            {/* Modal Card content element */}
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
