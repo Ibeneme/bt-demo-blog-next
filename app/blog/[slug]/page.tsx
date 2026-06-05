@@ -179,15 +179,22 @@ export default function BlogDetails() {
     );
 
   const pageUrl = `https://bt-demo-blog.vercel.app/blog/${post.slug}`;
-  const ogImage = post.image; // Ensure this is a high-quality image (ideally 1200x630)
+
+  // Dynamic OG Image URL
+  const ogImageUrl = `https://bt-demo-blog.vercel.app/api/og/blog/${
+    post.slug
+  }?title=${encodeURIComponent(post.title)}&excerpt=${encodeURIComponent(
+    post.excerpt || ""
+  )}&category=${encodeURIComponent(post.category)}&image=${encodeURIComponent(
+    post.image
+  )}`;
 
   return (
     <div className="bg-[#F8F7F4] min-h-screen font-['Rethink_Sans']">
-      {/* Enhanced SEO Component */}
       <SEO
         title={post.title}
         description={post.excerpt}
-        image={ogImage}
+        image={ogImageUrl}
         url={pageUrl}
       />
 
@@ -196,10 +203,10 @@ export default function BlogDetails() {
         <meta name="description" content={post.excerpt} />
         <link rel="canonical" href={pageUrl} />
 
-        {/* Open Graph / Social Sharing Meta Tags */}
+        {/* Dynamic Open Graph Tags */}
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.excerpt} />
-        <meta property="og:image" content={ogImage} />
+        <meta property="og:image" content={ogImageUrl} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content={post.title} />
@@ -211,10 +218,9 @@ export default function BlogDetails() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={post.title} />
         <meta name="twitter:description" content={post.excerpt} />
-        <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:image" content={ogImageUrl} />
         <meta name="twitter:image:alt" content={post.title} />
 
-        {/* Additional SEO */}
         <meta name="robots" content="index, follow" />
         <meta name="author" content="Blessing Attorney" />
       </Helmet>
