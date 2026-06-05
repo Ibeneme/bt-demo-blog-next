@@ -17,6 +17,9 @@ import {
 import { supabase } from "../../../configs/supabase";
 import { useRouter } from "next/router";
 
+
+export const dynamic = "force-dynamic";
+
 export default function CreateArticle() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -225,7 +228,7 @@ export default function CreateArticle() {
   const handleModalClose = () => {
     setShowModal(false);
     if (modalType === "success") {
-      router.push("/");
+        router.push("/");
     }
   };
 
