@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Mail, Gavel, Scale } from "lucide-react";
 import { FaLinkedin, FaTwitter, FaInstagram } from "react-icons/fa";
 import { motion } from "framer-motion";

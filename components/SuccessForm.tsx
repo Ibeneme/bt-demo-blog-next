@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 export default function SuccessForm() {
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = (e: any) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -20,7 +20,7 @@ export default function SuccessForm() {
   const handleCloseModal = () => {
     setShowModal(false);
     // Route to the home page
-    navigate("/");
+    router.push("/");
   };
 
   return (
