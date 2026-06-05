@@ -189,7 +189,6 @@ export default function BlogDetails() {
         image={ogImageUrl}
         url={pageUrl}
       />
-
       <Helmet>
         <title>{post.title} | Blessing Attorney</title>
         <meta name="description" content={post.excerpt} />
