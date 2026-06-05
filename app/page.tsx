@@ -133,7 +133,7 @@ export default function BlessingAttorneyBlog() {
         .from("articles")
         .select("*")
         .order("created_at", { ascending: false });
-
+        console.warn(data, 'currentArticle')
       if (error) throw error;
 
       if (data) {

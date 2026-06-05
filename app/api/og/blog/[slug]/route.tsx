@@ -1,3 +1,4 @@
+import { supabase } from "@/configs/supabase";
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 
@@ -8,17 +9,20 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    // We still need to await params for Next.js 15+ compatibility
-    await params; // Ignore the actual value since we use query params
+    const { slug } = await params;
 
-    const { searchParams } = new URL(request.url);
+    // Fetch post data from Supabase
+    const { data: post, } = await supabase
+      .from("articles")
+      .select("title, excerpt, category, image_url")
+      .eq("slug", slug)
+      .single();
 
-    const title = searchParams.get("title") || "Blessing Attorney Blog";
-    const excerpt = searchParams.get("excerpt") || "";
-    const category = searchParams.get("category") || "Legal Insights";
+    const title = post?.title || "Blessing Attorney Blog";
+    const excerpt = post?.excerpt || "";
+    const category = post?.category || "Legal Insights";
     const image =
-      searchParams.get("image") ||
-      "https://bt-demo-blog.vercel.app/default-og.jpg";
+      post?.image_url || "https://bt-demo-blog.vercel.app/default-og.jpg";
 
     return new ImageResponse(
       (
@@ -38,7 +42,6 @@ export async function GET(
             fontFamily: "system-ui, sans-serif",
           }}
         >
-          {/* Dark Overlay */}
           <div
             style={{
               position: "absolute",
@@ -48,7 +51,6 @@ export async function GET(
             }}
           />
 
-          {/* Main Content */}
           <div
             style={{
               display: "flex",
@@ -61,7 +63,6 @@ export async function GET(
               zIndex: 10,
             }}
           >
-            {/* Brand */}
             <div
               style={{
                 fontSize: "36px",
@@ -74,7 +75,6 @@ export async function GET(
               BLESSING ATTORNEY
             </div>
 
-            {/* Category */}
             <div
               style={{
                 backgroundColor: "#D4AF37",
@@ -89,7 +89,6 @@ export async function GET(
               {category}
             </div>
 
-            {/* Title */}
             <div
               style={{
                 fontSize: "48px",
@@ -102,7 +101,6 @@ export async function GET(
               {title}
             </div>
 
-            {/* Excerpt */}
             {excerpt && (
               <div
                 style={{
@@ -118,7 +116,6 @@ export async function GET(
             )}
           </div>
 
-          {/* Footer */}
           <div
             style={{
               position: "absolute",
@@ -136,10 +133,7 @@ export async function GET(
           </div>
         </div>
       ),
-      {
-        width: 1200,
-        height: 630,
-      }
+      { width: 1200, height: 630 }
     );
   } catch (error) {
     console.error("OG Image Error:", error);

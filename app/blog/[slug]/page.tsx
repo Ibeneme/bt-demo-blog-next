@@ -53,6 +53,7 @@ export default function BlogDetails() {
 
         if (articleError) throw articleError;
 
+
         if (currentArticle) {
           const words =
             currentArticle.content?.replace(/<[^>]*>/g, "").split(/\s+/)
@@ -90,6 +91,7 @@ export default function BlogDetails() {
             .select("*")
             .neq("id", currentArticle.id)
             .limit(6);
+
 
           if (siblingError) throw siblingError;
 
