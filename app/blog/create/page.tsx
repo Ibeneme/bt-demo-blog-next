@@ -15,7 +15,7 @@ import {
   Code,
 } from "lucide-react";
 import { supabase } from "../../../configs/supabase";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 
 export const dynamic = "force-dynamic";
