@@ -85,6 +85,7 @@ export default function BlogDetails() {
 
           setPost(loadedPost);
 
+          // Fetch related posts
           const { data: siblingArticles } = await supabase
             .from("articles")
             .select("*")
@@ -177,9 +178,7 @@ export default function BlogDetails() {
     );
 
   const pageUrl = `https://bt-demo-blog.vercel.app/blog/${post.slug}`;
-
-  // 🔥 Clean Dynamic OG Image URL (using slug only)
-  const ogImageUrl = `https://bt-demo-blog.vercel.app/api/og/blog/${post.slug}`;
+  const ogImageUrl = post.image; // ← Using real blog image directly
 
   return (
     <div className="bg-[#F8F7F4] min-h-screen font-['Rethink_Sans']">
@@ -189,12 +188,12 @@ export default function BlogDetails() {
         image={ogImageUrl}
         url={pageUrl}
       />
+
       <Helmet>
         <title>{post.title} | Blessing Attorney</title>
         <meta name="description" content={post.excerpt} />
         <link rel="canonical" href={pageUrl} />
 
-        {/* Dynamic Open Graph Tags */}
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.excerpt} />
         <meta property="og:image" content={ogImageUrl} />
@@ -205,7 +204,6 @@ export default function BlogDetails() {
         <meta property="og:url" content={pageUrl} />
         <meta property="og:site_name" content="Blessing Attorney" />
 
-        {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={post.title} />
         <meta name="twitter:description" content={post.excerpt} />
@@ -213,9 +211,9 @@ export default function BlogDetails() {
         <meta name="twitter:image:alt" content={post.title} />
 
         <meta name="robots" content="index, follow" />
-        <meta name="author" content="Blessing Attorney" />
       </Helmet>
 
+      {/* Rest of your page remains the same */}
       <style>{`
         .blog-content h2 { 
           font-size: 1.75rem; 
