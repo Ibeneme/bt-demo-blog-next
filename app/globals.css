@@ -1,30 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Rethink+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #000;
-}
+@theme {
+  --color-primary-teal-50: #efFAF9;
+  --color-primary-teal-100: #d6eded;
+  --color-primary-teal-200: #b1dedc;
+  --color-primary-teal-300: #81bfc2;
+  --color-primary-teal-400: #4aa0a5;
+  --color-primary-teal-500: #006D77;
+  --color-primary-teal-600: #005f68;
+  --color-primary-teal-700: #004e55;
+  --color-primary-teal-800: #003e44;
+  --color-primary-teal-850: #1a2e35;
+  --color-primary-teal-900: #1a2e35;
+  --color-primary-teal-950: #101e22;
+  
+  --color-accent-gold-50: #fdfaf7;
+  --color-accent-gold-100: #faf1eb;
+  --color-accent-gold-200: #f5e0d5;
+  --color-accent-gold-300: #ecc7b6;
+  --color-accent-gold-400: #E29578;
+  --color-accent-gold-500: #E29578;
+  --color-accent-gold-600: #cb7e5f;
+  --color-accent-gold-700: #aa6142;
+  --color-accent-gold-800: #884b30;
+  --color-accent-gold-900: #713e27;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-warm-cream-50: #FAF9F6;
+  --color-warm-cream-100: #FAF9F6;
+  --color-warm-cream-200: #E5E5E1;
+  --color-warm-cream-300: #dcdcd8;
+  --color-warm-cream-400: #c5c5be;
+  
+  --font-sans: "Rethink Sans", system-ui, -apple-system, sans-serif;
+  --font-display: "Playfair Display", "Georgia", serif;
+  --font-serif: "Playfair Display", "Georgia", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-warm-cream-50 text-primary-teal-900 font-sans antialiased selection:bg-primary-teal-100 selection:text-primary-teal-800;
 }
 
-input {
-  color: #000;
-}
