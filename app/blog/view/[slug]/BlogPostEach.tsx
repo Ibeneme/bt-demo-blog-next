@@ -37,7 +37,6 @@ interface BlogPostClientProps {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatArticle(data: any): BlogPost {
-  
   const words = data.content?.replace(/<[^>]*>/g, "").split(/\s+/).length || 0;
   const computedReadTime = Math.max(1, Math.ceil(words / 200)) + " min read";
   const formattedDate = data.created_at
