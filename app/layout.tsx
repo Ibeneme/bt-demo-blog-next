@@ -1,103 +1,61 @@
-import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata } from "next";
+import { Rethink_Sans } from "next/font/google";
 import "./globals.css";
-import Footer from "@/components/footer/Footer";
-import NavbarWrapper from "@/components/navbar/NavbarWrapper";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const rethink = Rethink_Sans({
+  variable: "--font-rethink",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://bt-demo-blog.vercel.app"),
   title: {
-    default: "ARIAD Psychological Services | Dallas, Texas",
-    template: "%s | ARIAD Psychological Services",
+    default: "Blessing Attorney | Corporate Law Insights",
+    template: "%s | Blessing Attorney",
   },
   description:
-    "Expert ADHD Testing, Autism (ASD) Evaluations, Psychoeducational, Neuropsychological & Psychological Assessments in Dallas, Texas. Compassionate care for children, teens, and adults.",
-
+    "Expert legal insights on corporate law, regulatory compliance, and business strategy in Nigeria.",
   keywords: [
-    "ADHD testing Dallas",
-    "Autism testing Dallas",
-    "Neuropsychological evaluation",
-    "Psychoeducational testing",
-    "Psychological assessment Texas",
-    "MMPI-3 testing",
-    "Child psychologist Dallas",
-    "ARIAD Psychological Services",
+    "Corporate Law",
+    "Legal Insights",
+    "Nigeria Startups",
+    "Compliance",
+    "Business Law",
   ],
-
-  authors: [{ name: "ARIAD Psychological Services" }],
-  creator: "ARIAD Psychological Services",
-
+  authors: [{ name: "Blessing Attorney" }],
   openGraph: {
-    title: "ARIAD Psychological Services | Expert Testing in Dallas",
-    description:
-      "Specialized ADHD, Autism, and Neuropsychological testing services in Dallas, Texas.",
-    url: "https://yourdomain.com", // ← Change to your real domain later
-    siteName: "ARIAD Psychological Services",
+    type: "website",
+    locale: "en_NG",
+    siteName: "Blessing Attorney Blog",
     images: [
       {
-        url: "/og-image.png", // You can add this later
+        url: "/default-og.jpg",
         width: 1200,
         height: 630,
-        alt: "ARIAD Psychological Services",
+        alt: "Blessing Attorney",
       },
     ],
-    locale: "en_US",
-    type: "website",
   },
-
   twitter: {
     card: "summary_large_image",
-    title: "ARIAD Psychological Services",
-    description:
-      "Expert ADHD, Autism & Neuropsychological Testing in Dallas, Texas",
-    images: ["/og-image.png"],
+    site: "@yourhandle",
   },
-
-  icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
-    other: {
-      rel: "apple-touch-icon",
-      url: "/favicon.png",
-    },
-  },
-
-  manifest: "/manifest.json", // Optional: add later for PWA
-};
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  themeColor: "#023B37",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  console.log("🔹 RootLayout rendered");
+
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-screen flex flex-col bg-[#F8FAF9] text-slate-900">
-        <NavbarWrapper />
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </body>
+    <html lang="en" className={`${rethink.variable} h-full antialiased`}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body className="min-h-full flex flex-col font-sans">{children}</body>
     </html>
   );
 }
