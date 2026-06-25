@@ -1,10 +1,15 @@
 // app/blog/[slug]/page.tsx
+
 import { supabase } from "../../../configs/supabase";
 import BlogDetailsClient from "./BlogDetailsClient";
 
 // ✅ DYNAMIC METADATA (Server Component)
 // app/blog/[slug]/page.tsx
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
 
   try {
@@ -20,12 +25,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       };
     }
 
-    const imageUrl = article.image_url || "https://bt-demo-blog.vercel.app/default-og.jpg";
+    const imageUrl =
+      article.image_url || "https://bt-demo-blog.vercel.app/default-og.jpg";
     const pageUrl = `https://bt-demo-blog.vercel.app/blog/${slug}`;
 
     return {
       title: `${article.title} | Blessing Attorney`,
-      description: article.excerpt || "Expert legal insights from Blessing Attorney",
+      description:
+        article.excerpt || "Expert legal insights from Blessing Attorney",
       openGraph: {
         title: article.title,
         description: article.excerpt,
@@ -58,8 +65,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 // Server Component
-export default async function BlogDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;   // ← Important fix
+export default async function BlogDetailsPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params; // ← Important fix
   console.log("🔹 BlogDetailsPage server component - slug:", slug);
 
   return <BlogDetailsClient slug={slug} />;

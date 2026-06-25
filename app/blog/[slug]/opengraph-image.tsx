@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
-import { supabase } from "@/configs/supabase";
-
+import { supabase } from "../../../configs/supabase";
 export const runtime = "edge";
 
 export const alt = "Blessing Attorney Blog Post Card";

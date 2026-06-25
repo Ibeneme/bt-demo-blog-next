@@ -1,64 +1,96 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-
 import {
-  Upload,
-  Save,
   Loader2,
-  Search,
+  ArrowLeft,
+  Save,
+  Image as ImageIcon,
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  List,
+  ListOrdered,
+  Link2,
+  Quote,
+  Code as CodeIcon,
+  Undo,
+  Redo,
+  Trash2,
+  Palette,
+  Highlighter,
+  Edit3,
+  Upload,
   CheckCircle,
   XCircle,
-  Link2,
   Globe,
-  Code,
+  Search,
 } from "lucide-react";
-import { supabase } from "../../../configs/supabase";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { supabase } from "../../../configs/supabase"; // Adjust path as needed
 
-
-export const dynamic = "force-dynamic";
-
-export default function CreateArticle() {
+export default function CreateArticlePage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState<"success" | "error">("success");
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Decoupling toggles for automatic generation
-  const [isSlugCustomized, setIsSlugCustomized] = useState(false);
-  const [isMetaTitleCustomized, setIsMetaTitleCustomized] = useState(false);
-  const [isMetaDescCustomized, setIsMetaDescCustomized] = useState(false);
-  const [isSchemaCustomized, setIsSchemaCustomized] = useState(false);
-
-  // Image handling states
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const ogInputRef = useRef<HTMLInputElement>(null);
-
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  const [selectedOgFile, setSelectedOgFile] = useState<File | null>(null);
-  const [ogImagePreview, setOgImagePreview] = useState<string | null>(null);
-
   const [formData, setFormData] = useState({
     title: "",
-    category: "Corporate Law",
+    slug: "",
+    category: "General",
     excerpt: "",
     content: "",
-    slug: "",
     metaTitle: "",
     metaDescription: "",
     canonicalUrl: "",
     structuredData: "",
   });
 
-  const editorRef = useRef<HTMLDivElement>(null);
+  const [image, setImage] = useState<File | null>(null);
+  const [ogImage, setOgImage] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [ogPreview, setOgPreview] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState<"success" | "error">("success");
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  // Helper method to turn standard titles into URL safe routing slugs
+  const [isSlugCustomized, setIsSlugCustomized] = useState(false);
+  const [isMetaTitleCustomized, setIsMetaTitleCustomized] = useState(false);
+  const [isMetaDescCustomized, setIsMetaDescCustomized] = useState(false);
+  const [isStructuredDataCustomized, setIsStructuredDataCustomized] =
+    useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const ogInputRef = useRef<HTMLInputElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const structuredDataRef = useRef<HTMLTextAreaElement>(null);
+
+  const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set());
+  const [currentFontSize, setCurrentFontSize] = useState("16");
+  const [currentLineHeight, setCurrentLineHeight] = useState("1.6");
+
+  const fontSizes = [12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
+  const lineHeights = [
+    { label: "1.0", value: "1.0" },
+    { label: "1.2", value: "1.2" },
+    { label: "1.4", value: "1.4" },
+    { label: "1.6", value: "1.6" },
+    { label: "1.8", value: "1.8" },
+    { label: "2.0", value: "2.0" },
+    { label: "2.5", value: "2.5" },
+    { label: "3.0", value: "3.0" },
+  ];
+
   const generateSlug = (text: string): string => {
     return text
       .toLowerCase()
@@ -68,95 +100,505 @@ export default function CreateArticle() {
       .replace(/-+/g, "-");
   };
 
-  // Helper to generate schema blocks natively based on raw inputs
-  const autoGenerateSchema = (title: string, excerpt: string, slug: string) => {
-    const fallbackSlug = slug || generateSlug(title);
-    return JSON.stringify(
-      {
-        "@context": "https://schema.org",
-        "@type": "NewsArticle",
-        headline: title || "Untitled Article",
-        description: excerpt || "No description provided.",
-        url: `https://bt-demo-blog.vercel.app/blog/${fallbackSlug}`,
+  const generateStructuredData = (data: typeof formData): string => {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://your-site.com";
+    const articleUrl =
+      data.canonicalUrl ||
+      `${baseUrl}/blog/${data.slug || generateSlug(data.title)}`;
+    const structured = {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      url: articleUrl,
+      headline: data.title || "Untitled Article",
+      description: data.excerpt || data.metaDescription || "",
+      datePublished: new Date().toISOString(),
+      dateModified: new Date().toISOString(),
+      author: {
+        "@type": "Organization",
+        name: "ARIAD Psychological Services", // Adjust per project
       },
-      null,
-      2
-    );
+      publisher: {
+        "@type": "Organization",
+        name: "ARIAD Psychological Services",
+        logo: {
+          "@type": "ImageObject",
+          url: `${baseUrl}/logo.png`,
+        },
+      },
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": articleUrl,
+      },
+    };
+    return JSON.stringify(structured, null, 2);
   };
 
-  const handleEditorInput = () => {
-    if (editorRef.current) {
-      const content = editorRef.current.innerHTML;
-      setFormData((prev) => ({ ...prev, content }));
+  useEffect(() => {
+    if (!isStructuredDataCustomized && (formData.title || formData.excerpt)) {
+      const newStructured = generateStructuredData(formData);
+      setFormData((prev) => ({ ...prev, structuredData: newStructured }));
+    }
+  }, [
+    formData.title,
+    formData.excerpt,
+    formData.slug,
+    formData.canonicalUrl,
+    isStructuredDataCustomized,
+  ]);
+
+  const handleStructuredDataChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setIsStructuredDataCustomized(true);
+    setFormData((prev) => ({ ...prev, structuredData: e.target.value }));
+  };
+
+  const resetToAutoStructured = () => {
+    setIsStructuredDataCustomized(false);
+    const autoData = generateStructuredData(formData);
+    setFormData((prev) => ({ ...prev, structuredData: autoData }));
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "title" && !isSlugCustomized) {
+      const newSlug = generateSlug(value);
+      setFormData((prev) => ({
+        ...prev,
+        slug: newSlug,
+        metaTitle: isMetaTitleCustomized
+          ? prev.metaTitle
+          : `${value} | ARIAD Psychological Services`,
+        canonicalUrl: `${
+          process.env.NEXT_PUBLIC_SITE_URL || "https://your-site.com"
+        }/blog/${newSlug}`,
+      }));
+    }
+
+    if (name === "excerpt" && !isMetaDescCustomized) {
+      const truncated =
+        value.length > 155 ? value.slice(0, 152) + "..." : value;
+      setFormData((prev) => ({ ...prev, metaDescription: truncated }));
     }
   };
 
-  const execCommand = (command: string, value?: string) => {
-    // Always check for window/document existence
-    if (typeof document !== "undefined" && editorRef.current) {
-      editorRef.current.focus();
-      document.execCommand(command, false, value || undefined);
-    }
-  };
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsSlugCustomized(e.target.value.trim() !== "");
+    setFormData((prev) => ({ ...prev, slug: e.target.value }));
   };
 
-  const handleOgFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedOgFile(file);
-      setOgImagePreview(URL.createObjectURL(file));
+  const handleMetaTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsMetaTitleCustomized(e.target.value.trim() !== "");
+    setFormData((prev) => ({ ...prev, metaTitle: e.target.value }));
+  };
+
+  const handleMetaDescChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setIsMetaDescCustomized(e.target.value.trim() !== "");
+    setFormData((prev) => ({ ...prev, metaDescription: e.target.value }));
+  };
+
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    isOg: boolean
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    if (isOg) {
+      setOgImage(file);
+      setOgPreview(previewUrl);
+    } else {
+      setImage(file);
+      setImagePreview(previewUrl);
     }
   };
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+  const uploadImage = async (
+    file: File,
+    folder: string
+  ): Promise<string | null> => {
+    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+    const { error: uploadError } = await supabase.storage
+      .from("blog-images")
+      .upload(`${folder}/${fileName}`, file, {
+        cacheControl: "3600",
+        upsert: true,
+      });
+    if (uploadError) throw uploadError;
+    const { data: urlData } = supabase.storage
+      .from("blog-images")
+      .getPublicUrl(`${folder}/${fileName}`);
+    return urlData.publicUrl;
+  };
 
-    if (!formData.title.trim()) newErrors.title = "Article title is required";
-    if (!formData.excerpt.trim()) newErrors.excerpt = "Excerpt is required";
-    if (
-      !formData.content.trim() ||
-      formData.content === "<br>" ||
-      formData.content === ""
-    ) {
-      newErrors.content = "Full article content is required";
+  // Rich Text Editor Logic
+  const escapeHtml = (str: string) =>
+    str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  const syncContent = () => {
+    if (contentRef.current) {
+      setFormData((prev) => ({
+        ...prev,
+        content: contentRef.current!.innerHTML,
+      }));
     }
-    if (!formData.slug.trim()) newErrors.slug = "URL slug is required";
+  };
 
-    if (formData.structuredData.trim()) {
+  const getBlockElement = (
+    node: Node | null,
+    editor: HTMLElement
+  ): HTMLElement | null => {
+    const BLOCK = /^(P|H[1-6]|BLOCKQUOTE|DIV|LI|UL|OL)$/;
+    while (node && node !== editor) {
+      if (
+        node.nodeType === Node.ELEMENT_NODE &&
+        BLOCK.test((node as Element).tagName)
+      ) {
+        return node as HTMLElement;
+      }
+      node = node.parentNode;
+    }
+    return null;
+  };
+
+  const updateActiveFormats = () => {
+    const editor = contentRef.current;
+    if (!editor) return;
+    const selection = document.getSelection();
+    if (!selection || selection.rangeCount === 0 || !selection.anchorNode) {
+      setActiveFormats(new Set());
+      return;
+    }
+    if (!editor.contains(selection.anchorNode)) {
+      setActiveFormats(new Set());
+      return;
+    }
+    const next = new Set<string>();
+    const toggleCommands = [
+      "bold",
+      "italic",
+      "underline",
+      "strikeThrough",
+      "justifyLeft",
+      "justifyCenter",
+      "justifyRight",
+      "insertUnorderedList",
+      "insertOrderedList",
+    ];
+    toggleCommands.forEach((cmd) => {
       try {
-        JSON.parse(formData.structuredData);
-      } catch (e) {
-        newErrors.structuredData = "Invalid JSON schema configuration format.";
+        if (document.queryCommandState(cmd)) next.add(cmd);
+      } catch {}
+    });
+    try {
+      const block = document.queryCommandValue("formatBlock").toLowerCase();
+      if (["h1", "h2", "h3", "h4", "blockquote"].includes(block)) {
+        next.add(block);
+      }
+    } catch {}
+    let detectedLineHeight = "1.6";
+    const anchorBlock = getBlockElement(selection.anchorNode, editor);
+    if (anchorBlock) {
+      const computed = window.getComputedStyle(anchorBlock).lineHeight;
+      if (computed === "normal") detectedLineHeight = "1.6";
+      else if (computed.endsWith("px")) {
+        const px = parseFloat(computed);
+        detectedLineHeight = (px / 16).toFixed(1);
+      } else {
+        detectedLineHeight = parseFloat(computed).toFixed(1);
       }
     }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setCurrentLineHeight(detectedLineHeight);
+    setActiveFormats(next);
   };
 
-  const uploadImageFile = async (
-    file: File,
-    bucket: string
-  ): Promise<string> => {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${Date.now()}-${Math.random()
-      .toString(36)
-      .substring(2, 7)}.${fileExt}`;
+  useEffect(() => {
+    document.addEventListener("selectionchange", updateActiveFormats);
+    return () =>
+      document.removeEventListener("selectionchange", updateActiveFormats);
+  }, []);
 
-    const { error: uploadError } = await supabase.storage
-      .from(bucket)
-      .upload(fileName, file, { cacheControl: "3600", upsert: true });
+  const exec = (command: string, value?: string) => {
+    const editor = contentRef.current;
+    if (!editor) return;
+    document.execCommand(command, false, value);
+    editor.focus();
+    syncContent();
+    updateActiveFormats();
+  };
 
-    if (uploadError) throw uploadError;
+  const toggleHeading = (tag: "h1" | "h2" | "h3" | "h4") => {
+    const editor = contentRef.current;
+    if (!editor) return;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    let node: Node | null = sel.anchorNode;
+    let blockEl: HTMLElement | null = null;
+    while (node && node !== editor) {
+      if (
+        node.nodeType === Node.ELEMENT_NODE &&
+        /^(P|H[1-6]|BLOCKQUOTE|DIV|LI)$/.test((node as Element).tagName)
+      ) {
+        blockEl = node as HTMLElement;
+        break;
+      }
+      node = node.parentNode;
+    }
+    if (!blockEl) {
+      document.execCommand("formatBlock", false, `<${tag}>`);
+      editor.focus();
+      syncContent();
+      updateActiveFormats();
+      return;
+    }
+    const currentTag = blockEl.tagName.toLowerCase();
+    if (currentTag === tag) {
+      const p = document.createElement("p");
+      p.innerHTML = blockEl.innerHTML;
+      blockEl.replaceWith(p);
+      const range = document.createRange();
+      range.selectNodeContents(p);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } else {
+      const newEl = document.createElement(tag);
+      newEl.innerHTML = blockEl.innerHTML;
+      blockEl.replaceWith(newEl);
+      const range = document.createRange();
+      range.selectNodeContents(newEl);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+    editor.focus();
+    syncContent();
+    updateActiveFormats();
+  };
 
-    const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
-    return data.publicUrl;
+  const applyLineHeight = (value: string) => {
+    const editor = contentRef.current;
+    if (!editor) return;
+    setCurrentLineHeight(value);
+    const sel = window.getSelection();
+    const BLOCK = /^(P|H[1-6]|BLOCKQUOTE|DIV|LI|UL|OL)$/;
+    const getBlock = (node: Node | null): HTMLElement | null => {
+      while (node && node !== editor) {
+        if (
+          node.nodeType === Node.ELEMENT_NODE &&
+          BLOCK.test((node as Element).tagName)
+        ) {
+          return node as HTMLElement;
+        }
+        node = node.parentNode;
+      }
+      return null;
+    };
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+      const walker = document.createTreeWalker(
+        editor,
+        NodeFilter.SHOW_ELEMENT,
+        {
+          acceptNode: (n) =>
+            BLOCK.test((n as Element).tagName)
+              ? NodeFilter.FILTER_ACCEPT
+              : NodeFilter.FILTER_SKIP,
+        }
+      );
+      let node;
+      while ((node = walker.nextNode())) {
+        (node as HTMLElement).style.lineHeight = value;
+      }
+      editor.focus();
+      syncContent();
+      return;
+    }
+    const range = sel.getRangeAt(0);
+    const affected = new Set<HTMLElement>();
+    const ab = getBlock(sel.anchorNode);
+    if (ab) affected.add(ab);
+    const fb = getBlock(sel.focusNode);
+    if (fb) affected.add(fb);
+    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_ELEMENT, {
+      acceptNode: (n) => {
+        if (!BLOCK.test((n as Element).tagName)) return NodeFilter.FILTER_SKIP;
+        const nr = document.createRange();
+        nr.selectNode(n);
+        return range.compareBoundaryPoints(Range.END_TO_START, nr) <= 0 &&
+          range.compareBoundaryPoints(Range.START_TO_END, nr) >= 0
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_SKIP;
+      },
+    });
+    let node;
+    while ((node = walker.nextNode())) {
+      affected.add(node as HTMLElement);
+    }
+    if (affected.size === 0) {
+      editor.style.lineHeight = value;
+    } else {
+      affected.forEach((el) => {
+        el.style.lineHeight = value;
+      });
+    }
+    editor.focus();
+    syncContent();
+  };
+
+  const applyStyle = (style: string, value: string) => {
+    const editor = contentRef.current;
+    if (!editor) return;
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+    document.execCommand(
+      "insertHTML",
+      false,
+      `<span style="${style}:${value}">${selection.toString() || "text"}</span>`
+    );
+    syncContent();
+    updateActiveFormats();
+  };
+
+  const removeFormatting = () => {
+    exec("removeFormat");
+    setCurrentFontSize("16");
+    setCurrentLineHeight("1.6");
+  };
+
+  const insertCode = () => {
+    const editor = contentRef.current;
+    if (!editor) return;
+    const sel = window.getSelection();
+    const text = sel && sel.toString() ? sel.toString() : "code";
+    document.execCommand(
+      "insertHTML",
+      false,
+      `<code>${escapeHtml(text)}</code>`
+    );
+    syncContent();
+  };
+
+  const insertLink = () => {
+    const editor = contentRef.current;
+    if (!editor) return;
+    const sel = window.getSelection();
+    const text = sel && sel.toString() ? sel.toString() : "link text";
+    const url = window.prompt("Enter URL:", "https://");
+    if (!url) return;
+    document.execCommand(
+      "insertHTML",
+      false,
+      `<a href="${escapeHtml(url)}">${escapeHtml(text)}</a>`
+    );
+    syncContent();
+  };
+
+  const handleFontSizeChange = (size: string) => {
+    applyStyle("font-size", `${size}px`);
+    setCurrentFontSize(size);
+  };
+
+  const handleContentInput = () => syncContent();
+
+  const toolbarButtons = [
+    {
+      icon: <Bold size={16} />,
+      label: "Bold",
+      key: "bold",
+      action: () => exec("bold"),
+    },
+    {
+      icon: <Italic size={16} />,
+      label: "Italic",
+      key: "italic",
+      action: () => exec("italic"),
+    },
+    {
+      icon: <Underline size={16} />,
+      label: "Underline",
+      key: "underline",
+      action: () => exec("underline"),
+    },
+    {
+      icon: <Strikethrough size={16} />,
+      label: "Strikethrough",
+      key: "strikeThrough",
+      action: () => exec("strikeThrough"),
+    },
+    {
+      icon: <Heading1 size={16} />,
+      label: "Heading 1",
+      key: "h1",
+      action: () => toggleHeading("h1"),
+    },
+    {
+      icon: <Heading2 size={16} />,
+      label: "Heading 2",
+      key: "h2",
+      action: () => toggleHeading("h2"),
+    },
+    {
+      icon: <Heading3 size={16} />,
+      label: "Heading 3",
+      key: "h3",
+      action: () => toggleHeading("h3"),
+    },
+    {
+      icon: <Heading4 size={16} />,
+      label: "Heading 4",
+      key: "h4",
+      action: () => toggleHeading("h4"),
+    },
+    {
+      icon: <AlignLeft size={16} />,
+      label: "Align Left",
+      key: "justifyLeft",
+      action: () => exec("justifyLeft"),
+    },
+    {
+      icon: <AlignCenter size={16} />,
+      label: "Center",
+      key: "justifyCenter",
+      action: () => exec("justifyCenter"),
+    },
+    {
+      icon: <AlignRight size={16} />,
+      label: "Align Right",
+      key: "justifyRight",
+      action: () => exec("justifyRight"),
+    },
+    {
+      icon: <List size={16} />,
+      label: "Bullet List",
+      key: "insertUnorderedList",
+      action: () => exec("insertUnorderedList"),
+    },
+    {
+      icon: <ListOrdered size={16} />,
+      label: "Numbered List",
+      key: "insertOrderedList",
+      action: () => exec("insertOrderedList"),
+    },
+    {
+      icon: <Quote size={16} />,
+      label: "Quote",
+      key: "blockquote",
+      action: () => exec("formatBlock", "<blockquote>"),
+    },
+    { icon: <CodeIcon size={16} />, label: "Code", action: insertCode },
+    { icon: <Link2 size={16} />, label: "Link", action: insertLink },
+  ];
+
+  const validateForm = () => {
+    if (!formData.title || !formData.excerpt || !formData.content) {
+      setError("Title, excerpt, and content are required");
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -164,60 +606,76 @@ export default function CreateArticle() {
     if (!validateForm()) return;
 
     setLoading(true);
+    setError("");
+    setSuccess("");
     setApiError(null);
 
     try {
-      // 1. Check for duplicate slug before inserting
-      let finalSlug = formData.slug;
-      const { data: existingArticles, error: checkError } = await supabase
+      const finalSlug = formData.slug || generateSlug(formData.title);
+
+      // Check for duplicate slug
+      const { data: existing } = await supabase
         .from("articles")
         .select("slug")
-        .eq("slug", finalSlug);
+        .eq("slug", finalSlug)
+        .maybeSingle();
 
-      if (checkError) throw checkError;
-
-      // If duplicate found, append a 4-character random string
-      if (existingArticles && existingArticles.length > 0) {
+      let uniqueSlug = finalSlug;
+      if (existing) {
         const randomId = Math.random().toString(36).substring(2, 6);
-        finalSlug = `${finalSlug}-${randomId}`;
+        uniqueSlug = `${finalSlug}-${randomId}`;
       }
 
-      // 2. Upload Images (using finalSlug-based naming if desired)
-      let publicImageUrl = "";
-      let ogImageUrl = "";
-      if (selectedFile) {
-        publicImageUrl = await uploadImageFile(selectedFile, "blog-covers");
-      }
-      if (selectedOgFile) {
-        ogImageUrl = await uploadImageFile(selectedOgFile, "blog-covers");
+      const formPayload = new FormData();
+      formPayload.append("title", formData.title);
+      formPayload.append("slug", uniqueSlug);
+      formPayload.append("category", formData.category);
+      formPayload.append("excerpt", formData.excerpt);
+      formPayload.append("content", formData.content);
+      formPayload.append("meta_title", formData.metaTitle);
+      formPayload.append("meta_description", formData.metaDescription);
+      formPayload.append("canonical_url", formData.canonicalUrl);
+      if (formData.structuredData) {
+        formPayload.append("structured_data", formData.structuredData);
       }
 
-      const articleData = {
-        title: formData.title,
-        category: formData.category,
-        excerpt: formData.excerpt,
-        content: formData.content,
-        slug: finalSlug, // Use the unique slug
-        image_url: publicImageUrl || null,
-        meta_title: formData.metaTitle || null,
-        meta_description: formData.metaDescription || null,
-        canonical_url: formData.canonicalUrl || null,
-        og_image_url: ogImageUrl || null,
-        structured_data: formData.structuredData.trim()
-          ? JSON.parse(formData.structuredData)
-          : null,
-      };
+      let imageUrl = null;
+      let ogImageUrl = null;
 
-      // 3. Insert Data
-      const { error } = await supabase.from("articles").insert([articleData]);
-      if (error) throw error;
+      if (image) {
+        imageUrl = await uploadImage(image, "featured");
+      }
+      if (ogImage) {
+        ogImageUrl = await uploadImage(ogImage, "og");
+      }
+
+      // Insert to DB (adjust schema as needed)
+      const { error: insertError } = await supabase.from("articles").insert([
+        {
+          title: formData.title,
+          slug: uniqueSlug,
+          category: formData.category,
+          excerpt: formData.excerpt,
+          content: formData.content,
+          image_url: imageUrl,
+          og_image_url: ogImageUrl,
+          meta_title: formData.metaTitle,
+          meta_description: formData.metaDescription,
+          canonical_url: formData.canonicalUrl,
+          structured_data: formData.structuredData
+            ? JSON.parse(formData.structuredData)
+            : null,
+        },
+      ]);
+
+      if (insertError) throw insertError;
 
       setModalType("success");
       setShowModal(true);
-      // Reset form logic here...
-    } catch (error: any) {
-      console.error("Full Error Object:", error);
-      setApiError(error.message || "Failed to save data.");
+      setSuccess("Article published successfully!");
+    } catch (err: any) {
+      console.error(err);
+      setApiError(err.message || "Failed to create article");
       setModalType("error");
       setShowModal(true);
     } finally {
@@ -228,517 +686,456 @@ export default function CreateArticle() {
   const handleModalClose = () => {
     setShowModal(false);
     if (modalType === "success") {
-        router.push("/");
+      router.push("/admin/dashboard"); // or wherever
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F7F4] pt-24 pb-12 sm:pt-32 sm:pb-20 px-4 sm:px-8 md:px-16 font-['Rethink_Sans'] relative">
-      <div className="max-w-4xl mx-auto">
-        <header className="mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-5xl pt-8 sm:pt-[64px] font-bold text-[#4F2A7E] tracking-tighter mb-3 sm:mb-4">
-            Create New Article
-          </h1>
-          <p className="text-gray-600 text-sm sm:text-lg">
-            Use the editor below to craft your content with full styling
-            control.
-          </p>
-        </header>
+    <div className="min-h-screen bg-[#F1F4F9] py-12 px-4 md:px-8 font-['Rethink_Sans']">
+      <style>{`
+        .rich-content-editor:empty:before {
+          content: attr(data-placeholder);
+          color: #94a3b8;
+        }
+        .rich-content-editor h1 { font-size: 1.75rem; font-weight: 700; margin: 0.6em 0; }
+        .rich-content-editor h2 { font-size: 1.4rem; font-weight: 700; margin: 0.6em 0; }
+        .rich-content-editor h3 { font-size: 1.15rem; font-weight: 700; margin: 0.5em 0; }
+        .rich-content-editor h4 { font-size: 1rem; font-weight: 700; margin: 0.5em 0; }
+        .rich-content-editor blockquote {
+          border-left: 3px solid #067F76;
+          padding-left: 1em;
+          color: #475569;
+          margin: 0.6em 0;
+        }
+        .rich-content-editor code {
+          background: #e2e8f0;
+          padding: 0.15em 0.4em;
+          border-radius: 0.3em;
+          font-family: ui-monospace, monospace;
+          font-size: 0.9em;
+        }
+        .rich-content-editor ul, .rich-content-editor ol {
+          padding-left: 1.8em !important;
+          margin: 0.5em 0 !important;
+        }
+        .rich-content-editor a { color: #067F76; text-decoration: underline; }
+      `}</style>
+
+      <div className="max-w-4xl mx-auto mt-[120px]">
+        <Link
+          href="/admin/dashboard"
+          className="inline-flex items-center gap-2 text-[#023B37] font-semibold mb-6 hover:underline"
+        >
+          <ArrowLeft size={18} /> Back to Dashboard
+        </Link>
 
         <motion.form
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           onSubmit={handleSubmit}
-          className="bg-white p-5 sm:p-10 rounded-2xl sm:rounded-3xl border border-gray-100 space-y-6 sm:space-y-8 shadow-sm"
+          className="space-y-6"
         >
-          {/* Article Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-[#4F2A7E]">
-                Article Title <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Navigating M&A in 2026"
-                className="w-full text-[#000] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-gray-200 focus:border-[#4F2A7E] outline-none transition-all text-sm sm:text-base"
-                value={formData.title}
-                onChange={(e) => {
-                  const newTitle = e.target.value;
-                  const computedSlug = isSlugCustomized
-                    ? formData.slug
-                    : generateSlug(newTitle);
-
-                  setFormData((prev) => ({
-                    ...prev,
-                    title: newTitle,
-                    slug: computedSlug,
-                    metaTitle: isMetaTitleCustomized
-                      ? prev.metaTitle
-                      : `${newTitle} | Insights`,
-                    structuredData: isSchemaCustomized
-                      ? prev.structuredData
-                      : autoGenerateSchema(
-                          newTitle,
-                          prev.excerpt,
-                          computedSlug
-                        ),
-                  }));
-
-                  if (errors.title) setErrors({ ...errors, title: "" });
-                  if (!isSlugCustomized && errors.slug)
-                    setErrors({ ...errors, slug: "" });
-                }}
-              />
-              {errors.title && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1">
-                  {errors.title}
-                </p>
-              )}
+          <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-3 bg-[#067F76]/10 text-[#067F76] rounded-2xl">
+                <Save />
+              </div>
+              <h1 className="text-2xl font-bold text-slate-900">
+                Create New Article
+              </h1>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-[#4F2A7E]">
-                Category
-              </label>
-              <select
-                className="w-full text-[#000] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-gray-200 focus:border-[#4F2A7E] outline-none transition-all bg-white text-sm sm:text-base"
-                value={formData.category}
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
-              >
-                <option>Corporate Law</option>
-                <option>Regulatory</option>
-                <option>Compliance</option>
-                <option>Intellectual Property</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-[#4F2A7E]">
-              Excerpt (Summary) <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              required
-              placeholder="A brief summary for the blog feed..."
-              className="w-full text-[#000] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-gray-200 focus:border-[#4F2A7E] outline-none transition-all h-24 text-sm sm:text-base"
-              value={formData.excerpt}
-              onChange={(e) => {
-                const newExcerpt = e.target.value;
-                // Safely slice the description down to an ideal 155 character count layout
-                const formattedDesc =
-                  newExcerpt.length > 155
-                    ? `${newExcerpt.slice(0, 152)}...`
-                    : newExcerpt;
-
-                setFormData((prev) => ({
-                  ...prev,
-                  excerpt: newExcerpt,
-                  metaDescription: isMetaDescCustomized
-                    ? prev.metaDescription
-                    : formattedDesc,
-                  structuredData: isSchemaCustomized
-                    ? prev.structuredData
-                    : autoGenerateSchema(prev.title, newExcerpt, prev.slug),
-                }));
-                if (errors.excerpt) setErrors({ ...errors, excerpt: "" });
-              }}
-            />
-            {errors.excerpt && (
-              <p className="text-red-500 text-xs sm:text-sm mt-1">
-                {errors.excerpt}
-              </p>
-            )}
-          </div>
-
-          {/* Editor Area */}
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-[#4F2A7E]">
-              Full Article Content <span className="text-red-500">*</span>
-            </label>
-
-            {/* Toolbar */}
-            <div className="bg-[#4F2A7E] text-white px-4 sm:px-6 py-3 flex flex-wrap items-center gap-2 border-b rounded-t-xl sm:rounded-t-2xl">
-              <div className="flex items-center gap-2 mr-2 sm:mr-4">
-                <div className="w-6 h-6 sm:w-7 sm:h-7 bg-white rounded flex items-center justify-center shrink-0">
-                  <span className="text-[#4F2A7E] text-base sm:text-xl font-bold">
-                    B
-                  </span>
-                </div>
-                <span className="font-semibold text-xs sm:text-sm tracking-wide whitespace-nowrap">
-                  Blessing Attorney Editor
-                </span>
-              </div>
-
-              <div className="flex items-center gap-0.5 sm:gap-1 border-r border-white/20 pr-2 sm:pr-4">
-                <button
-                  type="button"
-                  onClick={() => execCommand("bold")}
-                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded hover:bg-white/10 text-sm font-bold"
-                >
-                  B
-                </button>
-                <button
-                  type="button"
-                  onClick={() => execCommand("italic")}
-                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded hover:bg-white/10 text-sm italic"
-                >
-                  I
-                </button>
-                <button
-                  type="button"
-                  onClick={() => execCommand("underline")}
-                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded hover:bg-white/10 text-sm underline"
-                >
-                  U
-                </button>
-              </div>
-
-              <div className="flex items-center gap-0.5 sm:gap-1 sm:border-r border-white/20 sm:pr-4">
-                <button
-                  type="button"
-                  onClick={() => execCommand("justifyLeft")}
-                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded hover:bg-white/10"
-                >
-                  ↤
-                </button>
-                <button
-                  type="button"
-                  onClick={() => execCommand("justifyCenter")}
-                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded hover:bg-white/10"
-                >
-                  ↔
-                </button>
-                <button
-                  type="button"
-                  onClick={() => execCommand("justifyRight")}
-                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded hover:bg-white/10"
-                >
-                  ↦
-                </button>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => execCommand("undo")}
-                className="ml-auto px-3 sm:px-4 py-1 text-xs sm:text-sm bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-              >
-                Undo
-              </button>
-            </div>
-
-            <div
-              ref={editorRef}
-              contentEditable="true"
-              onInput={handleEditorInput}
-              className="min-h-[350px] sm:min-h-[500px] p-4 sm:p-12 outline-none text-base sm:text-[17px] leading-relaxed text-gray-800 border border-gray-200 rounded-b-xl sm:rounded-b-2xl focus:border-[#4F2A7E]"
-              style={{ fontFamily: "Calibri, Arial, sans-serif" }}
-            />
-
-            {errors.content && (
-              <p className="text-red-500 text-xs sm:text-sm mt-1">
-                {errors.content}
-              </p>
-            )}
-          </div>
-
-          <hr className="border-gray-100" />
-
-          {/* Advanced SEO Architecture Section */}
-          <div className="space-y-6 bg-gray-50/50 p-4 sm:p-6 rounded-2xl border border-gray-100">
-            <h2 className="flex items-center gap-2 text-lg sm:text-xl font-bold text-[#4F2A7E]">
-              <Search size={20} /> Advanced SEO Engine Controls
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Meta Title Input */}
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
-                  SEO Meta Title
+            <div className="space-y-6">
+              {/* Title */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                  Article Title <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Custom <title> tag text..."
-                  className="w-full text-[#000] px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white outline-none transition-all text-sm"
-                  value={formData.metaTitle}
-                  onChange={(e) => {
-                    setIsMetaTitleCustomized(e.target.value.trim() !== "");
-                    setFormData({ ...formData, metaTitle: e.target.value });
-                  }}
+                  name="title"
+                  required
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="e.g. Understanding ADHD in Adults"
+                  className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none focus:border-[#067F76]"
                 />
               </div>
 
-              {/* URL Routing Slug Input */}
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-[#4F2A7E]">
+              {/* Slug */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
                   URL Slug <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. your-article-url"
-                  className="w-full text-[#000] px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white outline-none transition-all text-sm"
+                  name="slug"
                   value={formData.slug}
-                  onChange={(e) => {
-                    const manualSlug = e.target.value;
-                    const customized = manualSlug.trim() !== "";
-                    setIsSlugCustomized(customized);
-
-                    setFormData((prev) => ({
-                      ...prev,
-                      slug: manualSlug,
-                      structuredData: isSchemaCustomized
-                        ? prev.structuredData
-                        : autoGenerateSchema(
-                            prev.title,
-                            prev.excerpt,
-                            manualSlug
-                          ),
-                    }));
-                    if (errors.slug) setErrors({ ...errors, slug: "" });
-                  }}
-                  onBlur={() => {
-                    setFormData((prev) => {
-                      const finalSlug = generateSlug(prev.slug);
-                      return {
-                        ...prev,
-                        slug: finalSlug,
-                        structuredData: isSchemaCustomized
-                          ? prev.structuredData
-                          : autoGenerateSchema(
-                              prev.title,
-                              prev.excerpt,
-                              finalSlug
-                            ),
-                      };
-                    });
-                  }}
+                  onChange={handleSlugChange}
+                  placeholder="your-article-title"
+                  className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none focus:border-[#067F76]"
                 />
-                {errors.slug && (
-                  <p className="text-red-500 text-xs mt-1">{errors.slug}</p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Category */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                    Category
+                  </label>
+                  <input
+                    type="text"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
+                  />
+                </div>
+
+                {/* Featured Image */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                    Featured Image
+                  </label>
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="cursor-pointer flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-[#067F76]"
+                  >
+                    <ImageIcon className="text-slate-400" size={24} />
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageChange(e, false)}
+                      className="hidden"
+                    />
+                    <span className="text-sm text-slate-600">
+                      {imagePreview ? "Change Image" : "Upload Featured Image"}
+                    </span>
+                  </div>
+                  {imagePreview && (
+                    <img
+                      src={imagePreview}
+                      alt="preview"
+                      className="mt-3 rounded-xl max-h-48 object-cover w-full"
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Excerpt */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                  Excerpt (Summary) <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  name="excerpt"
+                  required
+                  value={formData.excerpt}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="A short preview..."
+                  className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
+                />
+              </div>
+
+              {/* Rich Editor */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                  Content <span className="text-red-500">*</span>
+                </label>
+                <div className="sticky top-0 z-20 flex flex-wrap items-center gap-2 p-3 mb-3 bg-slate-100 rounded-xl border border-slate-200 shadow-sm">
+                  {/* Toolbar similar to first + second */}
+                  <div className="flex gap-1 pr-3 border-r border-slate-300">
+                    <button
+                      type="button"
+                      onClick={() => exec("undo")}
+                      className="p-2 hover:bg-white rounded-lg"
+                      title="Undo"
+                    >
+                      <Undo size={18} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => exec("redo")}
+                      className="p-2 hover:bg-white rounded-lg"
+                      title="Redo"
+                    >
+                      <Redo size={18} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={removeFormatting}
+                      className="p-2 hover:bg-white rounded-lg"
+                      title="Clear Formatting"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1 pr-3 border-r border-slate-300">
+                    <select
+                      value={currentFontSize}
+                      onChange={(e) => handleFontSizeChange(e.target.value)}
+                      className="bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-[#067F76]"
+                    >
+                      {fontSizes.map((size) => (
+                        <option key={size} value={size}>
+                          {size}px
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-1 pr-3 border-r border-slate-300">
+                    <select
+                      value={currentLineHeight}
+                      onChange={(e) => applyLineHeight(e.target.value)}
+                      className="bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-[#067F76]"
+                    >
+                      {lineHeights.map((lh) => (
+                        <option key={lh.value} value={lh.value}>
+                          ↕ {lh.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex gap-1 pr-3 border-r border-slate-300">
+                    <label
+                      className="cursor-pointer p-2 hover:bg-white rounded-lg"
+                      title="Text Color"
+                    >
+                      <Palette size={18} />
+                      <input
+                        type="color"
+                        onChange={(e) => applyStyle("color", e.target.value)}
+                        className="hidden"
+                      />
+                    </label>
+                    <label
+                      className="cursor-pointer p-2 hover:bg-white rounded-lg"
+                      title="Highlight"
+                    >
+                      <Highlighter size={18} />
+                      <input
+                        type="color"
+                        onChange={(e) =>
+                          applyStyle("background-color", e.target.value)
+                        }
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1">
+                    {toolbarButtons.map((btn, index) => {
+                      const isActive = btn.key
+                        ? activeFormats.has(btn.key)
+                        : false;
+                      return (
+                        <button
+                          key={index}
+                          type="button"
+                          title={btn.label}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={btn.action}
+                          className={`p-2 rounded-lg transition-colors ${
+                            isActive
+                              ? "bg-[#067F76] text-white shadow-sm"
+                              : "text-slate-600 hover:bg-white hover:text-[#067F76] hover:shadow-sm"
+                          }`}
+                        >
+                          {btn.icon}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div
+                  ref={contentRef}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onInput={handleContentInput}
+                  onKeyUp={updateActiveFormats}
+                  onMouseUp={updateActiveFormats}
+                  onClick={updateActiveFormats}
+                  data-placeholder="Write your article here..."
+                  className="rich-content-editor w-full min-h-[400px] p-6 bg-white rounded-2xl border border-slate-200 outline-none focus:border-[#067F76] text-base leading-relaxed"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* SEO Section - Blended styles */}
+          <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+            <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-6">
+              <Search size={20} /> SEO & Metadata
+            </h2>
+            <div className="space-y-5">
+              <input
+                type="text"
+                name="metaTitle"
+                value={formData.metaTitle}
+                onChange={handleMetaTitleChange}
+                placeholder="Meta Title (auto-generated from title)"
+                className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
+              />
+              <textarea
+                name="metaDescription"
+                value={formData.metaDescription}
+                onChange={handleMetaDescChange}
+                rows={2}
+                placeholder="Meta Description (auto from excerpt)"
+                className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
+              />
+              <input
+                type="url"
+                name="canonicalUrl"
+                value={formData.canonicalUrl}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    canonicalUrl: e.target.value,
+                  }))
+                }
+                placeholder="Canonical URL (auto-generated)"
+                className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
+              />
+            </div>
+          </div>
+
+          {/* OG Image and Structured Data */}
+          <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 space-y-6">
+            {/* OG Image */}
+            <div>
+              <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5 mb-2">
+                <Globe size={16} /> Open Graph Social Cover Image
+              </label>
+              <div
+                onClick={() => ogInputRef.current?.click()}
+                className="border border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:border-[#067F76]"
+              >
+                <input
+                  ref={ogInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageChange(e, true)}
+                  className="hidden"
+                />
+                {ogPreview ? (
+                  <div className="relative h-48 rounded-xl overflow-hidden">
+                    <img
+                      src={ogPreview}
+                      alt="OG"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => ogInputRef.current?.click()}
+                      className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-sm"
+                    >
+                      Change
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-slate-500">
+                    Upload OG Image (1200x630 recommended)
+                  </p>
                 )}
               </div>
             </div>
 
-            {/* Meta Description Textarea */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-700">
-                Meta Description
-              </label>
-              <textarea
-                maxLength={160}
-                placeholder="Recommended maximum structure length: 160 characters..."
-                className="w-full text-[#000] px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white outline-none transition-all h-20 text-sm"
-                value={formData.metaDescription}
-                onChange={(e) => {
-                  setIsMetaDescCustomized(e.target.value.trim() !== "");
-                  setFormData({ ...formData, metaDescription: e.target.value });
-                }}
-              />
-            </div>
-
-            {/* Canonical Link Field */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
-                <Link2 size={16} className="text-[#4F2A7E]" /> Canonical URL
-              </label>
-              <input
-                type="url"
-                placeholder="https://example.com/original-source-link"
-                className="w-full text-[#000] px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white outline-none transition-all text-sm"
-                value={formData.canonicalUrl}
-                onChange={(e) =>
-                  setFormData({ ...formData, canonicalUrl: e.target.value })
-                }
-              />
-            </div>
-
-            {/* Open Graph Social Sharing Cover Upload */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
-                <Globe size={16} className="text-[#4F2A7E]" /> Open Graph Social
-                Cover Image (og:image)
-              </label>
-              <input
-                type="file"
-                ref={ogInputRef}
-                onChange={handleOgFileChange}
-                accept="image/*"
-                className="hidden"
-              />
-              {ogImagePreview ? (
-                <div className="relative rounded-xl overflow-hidden border border-gray-200 h-32 w-full text-[#000] max-w-md bg-white">
-                  <img
-                    src={ogImagePreview}
-                    alt="OG Preview"
-                    className="w-full text-[#000] h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <button
-                      type="button"
-                      onClick={() => ogInputRef.current?.click()}
-                      className="bg-white/90 text-xs px-3 py-1.5 rounded-lg font-bold text-[#4F2A7E] hover:bg-white"
-                    >
-                      Swap OG Image
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  onClick={() => ogInputRef.current?.click()}
-                  className="border border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-[#4F2A7E] bg-white transition-all"
+            {/* Structured Data */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="flex items-center gap-2 text-lg font-bold">
+                  <Edit3 size={20} /> Structured Data (Schema.org)
+                </h3>
+                <button
+                  type="button"
+                  onClick={resetToAutoStructured}
+                  className="text-sm text-[#067F76] hover:underline"
                 >
-                  <p className="text-xs font-semibold text-gray-500">
-                    Optional: Upload custom 1200x630 social card layout image.
-                    (Leaves default article cover if empty)
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Structured JSON-LD Data Input */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
-                <Code size={16} className="text-[#4F2A7E]" /> Structured Schema
-                Data (JSON-LD)
-              </label>
+                  Reset to Auto
+                </button>
+              </div>
               <textarea
-                placeholder={`{\n  "@context": "https://schema.org",\n  "@type": "NewsArticle"\n}`}
-                className="w-full text-[#000] px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#4F2A7E] bg-white font-mono outline-none transition-all h-32 text-xs leading-normal"
+                ref={structuredDataRef}
                 value={formData.structuredData}
-                onChange={(e) => {
-                  setIsSchemaCustomized(e.target.value.trim() !== "");
-                  setFormData({ ...formData, structuredData: e.target.value });
-                  if (errors.structuredData)
-                    setErrors({ ...errors, structuredData: "" });
-                }}
+                onChange={handleStructuredDataChange}
+                className="w-full h-80 font-mono text-sm p-4 bg-slate-900 text-slate-100 rounded-2xl border border-slate-700 outline-none resize-y"
+                spellCheck={false}
               />
-              {errors.structuredData && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.structuredData}
-                </p>
-              )}
             </div>
           </div>
 
-          <hr className="border-gray-100" />
+          {error && (
+            <p className="text-red-600 text-center font-medium">{error}</p>
+          )}
 
-          {/* Main Cover Image Upload Component */}
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-[#4F2A7E]">
-              Cover Feature Image
-            </label>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/*"
-              className="hidden"
-            />
-
-            {imagePreview ? (
-              <div className="relative group rounded-2xl sm:rounded-3xl overflow-hidden border border-gray-100 h-48 sm:h-64 w-full text-[#000]">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full text-[#000] h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="bg-white text-[#4F2A7E] px-6 py-2 rounded-full font-bold text-xs"
-                  >
-                    Change Cover Image
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-gray-200 rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-center hover:border-[#4F2A7E] transition-all cursor-pointer bg-gray-50/50 hover:bg-white"
-              >
-                <Upload className="mx-auto text-[#4F2A7E] mb-4" size={28} />
-                <p className="font-semibold text-[#4F2A7E] text-sm">
-                  Click to select feature image file
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Supports PNG, JPG, or WebP formatting
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full text-[#000] flex items-center justify-center gap-3 bg-[#4F2A7E] text-white py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:bg-[#3A1F5E] transition-all disabled:opacity-70 shadow-lg shadow-[#4F2A7E]/10"
+            className="w-full bg-[#023B37] hover:bg-[#067F76] text-white py-5 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-70"
           >
             {loading ? (
-              <Loader2 className="animate-spin" size={22} />
+              <Loader2 className="animate-spin" size={24} />
             ) : (
               <>
-                <Save size={18} />
-                Publish Article
+                <Save size={22} /> Publish Article
               </>
             )}
           </button>
         </motion.form>
       </div>
 
-      {/* Status Modals */}
+      {/* Modal */}
       <AnimatePresence>
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.4 }}
+              animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
-              onClick={handleModalClose}
               className="fixed inset-0 bg-black"
+              onClick={handleModalClose}
             />
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full text-[#000] p-8 text-center border border-gray-100 z-10"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative bg-white rounded-3xl p-8 max-w-md w-full text-center z-10"
             >
               {modalType === "success" ? (
                 <>
-                  <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-50 mb-6">
-                    <CheckCircle className="h-10 w-10 text-green-600" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-[#4F2A7E] mb-2">
+                  <CheckCircle className="mx-auto h-16 w-16 text-green-600 mb-6" />
+                  <h3 className="text-2xl font-bold text-[#067F76] mb-2">
                     Article Published!
                   </h3>
-                  <p className="text-gray-500 text-sm mb-8">
-                    Configurations successfully mapped and saved.
+                  <p className="text-gray-600 mb-8">
+                    Your article is now live.
                   </p>
                   <button
                     onClick={handleModalClose}
-                    className="w-full text-[#000] py-3.5 bg-[#4F2A7E] text-white rounded-xl font-bold text-sm"
+                    className="w-full py-3 bg-[#067F76] text-white rounded-2xl font-semibold"
                   >
-                    Go to Insights Feed
+                    Go to Dashboard
                   </button>
                 </>
               ) : (
                 <>
-                  <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-6">
-                    <XCircle className="h-10 w-10 text-red-600" />
-                  </div>
+                  <XCircle className="mx-auto h-16 w-16 text-red-600 mb-6" />
                   <h3 className="text-2xl font-bold text-red-600 mb-2">
-                    Publishing Failed
+                    Error
                   </h3>
-                  <p className="text-gray-500 text-sm mb-8 bg-red-50 p-3 rounded-xl break-words max-h-32 overflow-y-auto">
-                    {apiError}
-                  </p>
+                  <p className="text-gray-600 mb-8">{apiError}</p>
                   <button
                     onClick={handleModalClose}
-                    className="w-full text-[#000] py-3.5 bg-gray-800 text-white rounded-xl font-bold text-sm"
+                    className="w-full py-3 bg-slate-800 text-white rounded-2xl font-semibold"
                   >
-                    Dismiss and Fix
+                    Try Again
                   </button>
                 </>
               )}
