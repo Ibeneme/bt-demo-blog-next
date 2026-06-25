@@ -686,7 +686,7 @@ export default function CreateArticlePage() {
   const handleModalClose = () => {
     setShowModal(false);
     if (modalType === "success") {
-      router.push("/admin/dashboard"); // or wherever
+      router.push("/admin/dashboard");
     }
   };
 
