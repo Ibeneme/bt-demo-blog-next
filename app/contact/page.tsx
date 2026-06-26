@@ -2,6 +2,7 @@
 import { Metadata } from "next";
 import ConsultationClient from "./ConsultationClient";
 
+
 export const metadata: Metadata = {
   title: "Schedule a Psychological Consultation | ARIAD Psychological Services",
   description:
@@ -30,6 +31,8 @@ export default function ConsultationPage() {
 
   return (
     <>
+ 
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

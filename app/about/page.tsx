@@ -1,6 +1,7 @@
-// app/about/page.tsx
+
 import { Metadata } from "next";
-import AboutUs from "./AboutUs"; // ← Your client component
+import AboutUs from "./AboutUs";
+import SEO from "@/components/SEO"; // ← Added SEO Import
 
 export const metadata: Metadata = {
   title: "About Us | Meet Our Team | ARIAD Psychological Services",
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/ariad-team-og.jpg", // Replace with actual OG image if available
+        url: "/images/ariad-team-og.jpg",
         width: 1200,
         height: 630,
         alt: "ARIAD Psychological Services Team",
@@ -61,6 +62,8 @@ export default function AboutPage() {
 
   return (
     <>
+ 
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

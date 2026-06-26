@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { Rethink_Sans } from "next/font/google";
-import "./globals.css";
 import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
 import NavbarWrapper from "@/components/navbar/NavbarWrapper";
 import Footer from "@/components/footer/Footer";
 
@@ -18,10 +17,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://ariadpsychservices.com"),
+  metadataBase: process.env.NEXT_PUBLIC_SITE_URL ? new URL(process.env.NEXT_PUBLIC_SITE_URL) : undefined,
   title: {
-    default:
-      "ARIAD Psychological Services | Holistic Neuropsychological Evaluation",
+    default: "ARIAD Psychological Services | Holistic Neuropsychological Evaluation",
     template: "%s | ARIAD Psychological Services",
   },
   description:
@@ -40,7 +38,7 @@ export const metadata: Metadata = {
     siteName: "ARIAD Psychological Services",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/favicon.png",
         width: 1200,
         height: 630,
         alt: "ARIAD Psychological Services",
@@ -51,6 +49,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
   },
 };
+
 
 export default function RootLayout({
   children,
@@ -63,6 +62,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-screen flex flex-col bg-[#F8FAF9] text-slate-900">
+        {/* HelmetProvider removed: Next.js handles head tags automatically */}
         <NavbarWrapper />
         <main className="flex-1">{children}</main>
         <Footer />

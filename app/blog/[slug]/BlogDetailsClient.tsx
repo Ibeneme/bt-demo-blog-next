@@ -140,11 +140,14 @@ export default function BlogDetailsClient({ slug }: BlogDetailsClientProps) {
           "h1",
           "h2",
           "h3",
+          "h4",
           "p",
           "div",
           "br",
           "strong",
           "em",
+          "b",
+          "i",
           "ul",
           "ol",
           "li",
@@ -158,8 +161,9 @@ export default function BlogDetailsClient({ slug }: BlogDetailsClientProps) {
           "td",
           "tr",
           "span",
+          "hr",
         ],
-        ALLOWED_ATTR: ["href", "target", "rel", "src", "alt", "class"],
+        ALLOWED_ATTR: ["href", "target", "rel", "src", "alt", "class", "style"],
       })
     : "";
 
@@ -183,17 +187,17 @@ export default function BlogDetailsClient({ slug }: BlogDetailsClientProps) {
   return (
     <div className="bg-[#FAF8F5] min-h-screen pb-20">
       {/* Back Button */}
-      <div className="max-w-4xl mx-auto px-6 pt-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8">
         <Link
           href="/blog"
-          className="inline-flex items-center gap-2 text-[#067F76] hover:text-[#023B37] transition-colors text-sm font-medium"
+          className="inline-flex items-center gap-2 text-[#067F76] hover:underline text-sm sm:text-base"
         >
           <ArrowLeft className="w-5 h-5" /> Back to All Articles
         </Link>
       </div>
 
-      {/* Hero Section */}
-      <section className="relative h-[55vh] sm:h-[65vh] lg:h-[72vh] flex items-end">
+      {/* Hero Section - More Responsive */}
+      <section className="relative h-[50vh] sm:h-[60vh] lg:h-[70vh] flex items-end mt-4">
         <Image
           src={post.image}
           alt={post.title}
@@ -202,92 +206,159 @@ export default function BlogDetailsClient({ slug }: BlogDetailsClientProps) {
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent" />
-
-        <div className="relative z-10 max-w-4xl mx-auto px-6 pb-12 w-full text-white">
-          <div className="inline-flex items-center px-5 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-sm mb-6 border border-white/20">
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pb-10 sm:pb-16 text-white w-full">
+          <div className="inline-flex items-center px-4 py-1.5 bg-white/10 rounded-full text-xs sm:text-sm mb-6">
             {post.category}
           </div>
-
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tighter mb-8">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black mb-6 leading-tight">
             {post.title}
           </h1>
-
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-sm opacity-90">
-            <span className="flex items-center gap-2">
-              <User className="w-4 h-4" /> {post.author}
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs sm:text-sm opacity-90">
+            <span>
+              <User className="inline w-4 h-4 mr-1" /> {post.author}
             </span>
-            <span className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" /> {post.date}
+            <span>
+              <Calendar className="inline w-4 h-4 mr-1" /> {post.date}
             </span>
-            <span className="flex items-center gap-2">
-              <Clock className="w-4 h-4" /> {post.readTime}
+            <span>
+              <Clock className="inline w-4 h-4 mr-1" /> {post.readTime}
             </span>
-
             <button
               onClick={handleShare}
-              className="flex items-center gap-2 hover:text-white transition-colors"
+              className="flex items-center gap-1 hover:text-white/80 transition-colors"
             >
               <Share2 className="w-4 h-4" />
               {shareSuccess ? "Link Copied!" : "Share"}
             </button>
 
+
             {isAdmin && (
-              <Link
-                href={`/blog/${post.slug}/edit`}
-                className="ml-auto flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white px-6 py-3 rounded-2xl font-medium transition-all"
-              >
-                <Edit3 size={18} />
-                Edit
-              </Link>
-            )}
+            <Link
+              href={`/blog/${post.slug}/edit`}
+              className="ml-auto flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white px-6 py-2 rounded-2xl font-medium transition-all"
+            >
+              <Edit3 size={18} />
+              Edit
+            </Link>
+          )}
           </div>
+
+   
         </div>
       </section>
 
       {/* Article Content */}
-      <article className="max-w-4xl mx-auto px-6 -mt-8 sm:-mt-10 relative z-20">
-        <div className="bg-white rounded-3xl p-8 sm:p-12 md:p-16 border border-slate-100">
+      <article className="max-w-4xl mx-auto px-4 sm:px-6 -mt-8 sm:-mt-10 relative z-20">
+        <div className="bg-white rounded-3xl p-6 sm:p-10 md:p-16 shadow-xl">
+          <style jsx global>{`
+            .article-body {
+              font-size: 1.05rem;
+              line-height: 1.85;
+              color: #374151;
+            }
+            .article-body h1,
+            .article-body h2,
+            .article-body h3 {
+              font-weight: 700;
+              margin-top: 2.25rem;
+              margin-bottom: 1.25rem;
+              scroll-margin-top: 80px;
+              color: #1f2937;
+            }
+            .article-body h2 {
+              font-size: 1.75rem;
+              border-bottom: 2px solid #e5e7eb;
+              padding-bottom: 0.75rem;
+            }
+            .article-body h3 {
+              font-size: 1.45rem;
+            }
+            .article-body p {
+              margin-bottom: 1.35rem;
+            }
+            .article-body ul,
+            .article-body ol {
+              margin-bottom: 1.5rem;
+              padding-left: 1.6rem;
+            }
+            .article-body ul {
+              list-style-type: disc;
+            }
+            .article-body ol {
+              list-style-type: decimal;
+            }
+            .article-body li {
+              margin-bottom: 0.65rem;
+              padding-left: 0.25rem;
+            }
+            .article-body strong,
+            .article-body b {
+              color: #1f2937;
+              font-weight: 600;
+            }
+            .article-body blockquote {
+              border-left: 4px solid #067f76;
+              padding-left: 1.25rem;
+              color: #4b5563;
+              font-style: italic;
+              margin: 2rem 0;
+            }
+            .article-body a {
+              color: #067f76;
+              text-decoration: underline;
+            }
+            .article-body a:hover {
+              color: #045c55;
+            }
+          `}</style>
           <div
             dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-            className="article-body prose prose-lg max-w-none prose-headings:text-[#023B37] prose-p:text-slate-700 prose-a:text-[#067F76]"
+            className="article-body prose prose-lg max-w-none"
           />
         </div>
       </article>
 
-      {/* Related Posts */}
+      {/* Related Posts - Fixed Mobile Overflow + Better Responsive */}
       {relatedPosts.length > 0 && (
-        <section className="max-w-7xl mx-auto px-6 mt-20">
-          <h2 className="text-3xl font-bold mb-10 text-[#023B37]">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 mt-16 sm:mt-20">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-8 sm:mb-10 text-gray-900">
             More in {post.category}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {relatedPosts.map((rel) => (
-              <Link
-                key={rel.id}
-                href={`/blog/view/${rel.slug}`}
-                className="group bg-white rounded-3xl overflow-hidden border border-slate-100 hover:border-[#067F76]/30 transition-all duration-300"
-              >
-                <div className="relative h-56">
-                  <Image
-                    src={rel.image}
-                    alt={rel.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-                <div className="p-8">
-                  <h3 className="font-semibold text-xl leading-tight mb-3 group-hover:text-[#067F76] transition-colors line-clamp-2">
-                    {rel.title}
-                  </h3>
-                  <p className="text-slate-600 line-clamp-3 text-[15px] mb-6">
-                    {rel.excerpt}
-                  </p>
-                  <span className="text-[#067F76] font-medium inline-flex items-center gap-2 group-hover:gap-3 transition-all">
-                    Read full article →
-                  </span>
-                </div>
-              </Link>
-            ))}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {relatedPosts.map((rel, index) => {
+              console.log(
+                `🔗 Rendering related post #${index + 1}:`,
+                rel.title
+              );
+              return (
+                <Link
+                  key={rel.id}
+                  href={`/blog/view/${rel.slug}`}
+                  className="block group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#067F76]/20"
+                >
+                  <div className="relative h-48 sm:h-52 lg:h-56">
+                    <Image
+                      src={rel.image}
+                      alt={rel.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="p-6 sm:p-8">
+                    <div className="font-bold text-lg sm:text-xl mb-3 group-hover:text-[#067F76] transition-colors line-clamp-2">
+                      {rel.title}
+                    </div>
+                    <p className="text-gray-600 text-sm line-clamp-3 mb-6">
+                      {rel.excerpt}
+                    </p>
+                    <span className="text-[#067F76] font-medium inline-flex items-center gap-2 group-hover:gap-3 transition-all text-sm">
+                      Read Article →
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}

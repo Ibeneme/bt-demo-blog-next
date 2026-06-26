@@ -14,6 +14,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Rethink_Sans } from "next/font/google";
 import { supabase } from "@/configs/supabase";
+import SEO from "@/components/SEO";
 
 const rethinkSans = Rethink_Sans({
   subsets: ["latin"],
@@ -136,12 +137,10 @@ export default function BlessingAttorneyBlog() {
   useEffect(() => {
     const checkAdmin = () => {
       const token = localStorage.getItem("adminToken");
-      // You can add more robust check (e.g., JWT decode, Supabase session, etc.)
       setIsAdmin(!!token && token.length > 10);
     };
 
     checkAdmin();
-    // Listen for storage changes (if token is set from another tab)
     window.addEventListener("storage", checkAdmin);
     return () => window.removeEventListener("storage", checkAdmin);
   }, []);
@@ -163,7 +162,7 @@ export default function BlessingAttorneyBlog() {
           title: article.title,
           excerpt: article.excerpt,
           content: article.content,
-          category: article.category || "Corporate Law",
+          category: article.category || "General",
           date: article.created_at
             ? new Date(article.created_at).toLocaleDateString("en-US", {
                 year: "numeric",
@@ -231,123 +230,133 @@ export default function BlessingAttorneyBlog() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-slate-900">
-        <div className="absolute inset-0">
-          <Image
-            src={heroBg}
-            alt="Hero"
-            fill
-            priority
-            className="object-cover scale-110"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
-        </div>
+    <>
+      <SEO
+        title="Latest Insights & Articles"
+        description="Clinical insights, parenting wisdom, mental health articles, and honest conversations from ARIAD Psychological Services."
+        keywords="mental health, psychology, parenting, clinical insights, neuropsychological evaluation, therapy, ADHD, autism, Dallas psychology"
+      />
 
-        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white">
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6">
-            Thoughts That <br />
-            <span className="bg-gradient-to-r from-[#67E8D6] to-[#D6C1A0] bg-clip-text text-transparent">
-              Guide Families
-            </span>
-          </h1>
-          <p className="max-w-2xl mx-auto text-lg text-slate-300 font-light">
-            Clinical insights, parenting wisdom, and honest conversations.
-          </p>
+      <div className="min-h-screen bg-slate-50">
+        {/* Hero Section */}
+        <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-slate-900">
+          <div className="absolute inset-0">
+            <Image
+              src={heroBg}
+              alt="Hero"
+              fill
+              priority
+              className="object-cover scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
+          </div>
 
-          {/* Admin-only Create Button */}
-          {isAdmin && (
-            <div className="mt-10">
-              <Link
-                href="/blog/create"
-                className="inline-flex items-center gap-3 bg-white text-[#023B37] px-8 py-4 rounded-full font-semibold hover:bg-[#067F76] hover:text-white transition-all"
-              >
-                Create New Article
-                <ArrowRight />
-              </Link>
+          <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white">
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6">
+              Thoughts That <br />
+              <span className="bg-gradient-to-r from-[#67E8D6] to-[#D6C1A0] bg-clip-text text-transparent">
+                Guide Families
+              </span>
+            </h1>
+            <p className="max-w-2xl mx-auto text-lg text-slate-300 font-light">
+              Clinical insights, parenting wisdom, and honest conversations.
+            </p>
+
+            {isAdmin && (
+              <div className="mt-10">
+                <Link
+                  href="/blog/create"
+                  className="inline-flex items-center gap-3 bg-white text-[#023B37] px-8 py-4 rounded-full font-semibold hover:bg-[#067F76] hover:text-white transition-all"
+                >
+                  Create New Article
+                  <ArrowRight />
+                </Link>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Posts Section */}
+        <section className="max-w-7xl mx-auto px-6 py-20">
+          <div className="flex justify-between items-end mb-12">
+            <h2 className="text-4xl font-bold text-[#023B37]">
+              Latest Insights
+            </h2>
+            <Link
+              href="/"
+              className="text-[#067F76] font-medium flex items-center gap-2 hover:gap-3 transition-all"
+            >
+              View All <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <SkeletonCard key={i} />
+              ))}
+            </div>
+          ) : allPosts.length === 0 ? (
+            <div className="text-center py-20 bg-white rounded-3xl">
+              <p className="text-slate-500">No articles found.</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <AnimatePresence mode="popLayout">
+                {allPosts.map((post) => (
+                  <BlogCard
+                    key={post.id}
+                    post={post}
+                    onInitiateDelete={handleInitiateDelete}
+                    isDeleting={deletingId === post.id}
+                    isAdmin={isAdmin}
+                  />
+                ))}
+              </AnimatePresence>
             </div>
           )}
-        </div>
-      </section>
+        </section>
 
-      {/* Posts Section */}
-      <section className="max-w-7xl mx-auto px-6 py-20">
-        <div className="flex justify-between items-end mb-12">
-          <h2 className="text-4xl font-bold text-[#023B37]">Latest Insights</h2>
-          <Link
-            href="/"
-            className="text-[#067F76] font-medium flex items-center gap-2 hover:gap-3 transition-all"
-          >
-            View All <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        {loading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <SkeletonCard key={i} />
-            ))}
-          </div>
-        ) : allPosts.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl">
-            <p className="text-slate-500">No articles found.</p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <AnimatePresence mode="popLayout">
-              {allPosts.map((post) => (
-                <BlogCard
-                  key={post.id}
-                  post={post}
-                  onInitiateDelete={handleInitiateDelete}
-                  isDeleting={deletingId === post.id}
-                  isAdmin={isAdmin}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
-      </section>
-
-      {/* Delete Confirmation Modal */}
-      <AnimatePresence>
-        {modalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-3xl p-8 max-w-md w-full text-center"
-            >
-              <div className="mx-auto w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-5">
-                <AlertTriangle className="text-red-500" size={28} />
-              </div>
-              <h3 className="text-2xl font-bold text-[#023B37] mb-2">
-                Confirm Deletion
-              </h3>
-              <p className="text-slate-600 mb-8">
-                Are you sure you want to permanently delete{" "}
-                <span className="font-semibold">"{targetTitle}"</span>? This
-                action cannot be undone.
-              </p>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setModalOpen(false)}
-                  className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 rounded-2xl font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConfirmDelete}
-                  className="flex-1 py-3.5 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-medium transition-colors"
-                >
-                  Delete Permanently
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </div>
+        {/* Delete Confirmation Modal */}
+        <AnimatePresence>
+          {modalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white rounded-3xl p-8 max-w-md w-full text-center"
+              >
+                <div className="mx-auto w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-5">
+                  <AlertTriangle className="text-red-500" size={28} />
+                </div>
+                <h3 className="text-2xl font-bold text-[#023B37] mb-2">
+                  Confirm Deletion
+                </h3>
+                <p className="text-slate-600 mb-8">
+                  Are you sure you want to permanently delete{" "}
+                  <span className="font-semibold">"{targetTitle}"</span>? This
+                  action cannot be undone.
+                </p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setModalOpen(false)}
+                    className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 rounded-2xl font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleConfirmDelete}
+                    className="flex-1 py-3.5 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-medium transition-colors"
+                  >
+                    Delete Permanently
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+    </>
   );
 }

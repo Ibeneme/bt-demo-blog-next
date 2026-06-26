@@ -9,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function AdminLoginPage() {
-  return <AdminLoginClient />;
+  return (
+    <>
+      <AdminLoginClient />
+    </>
+  );
 }

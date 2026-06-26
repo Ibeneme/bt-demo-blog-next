@@ -38,6 +38,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "../../../configs/supabase"; // Adjust path as needed
+import RichTextEditor from "@/components/Richtexteditor";
+import { convertToJpeg } from "@/lib/imageUse";
+import AdminGuard from "@/app/admin/AdminGuard";
 
 export default function CreateArticlePage() {
   const router = useRouter();
@@ -642,12 +645,10 @@ export default function CreateArticlePage() {
       let imageUrl = null;
       let ogImageUrl = null;
 
-      if (image) {
-        imageUrl = await uploadImage(image, "featured");
-      }
-      if (ogImage) {
-        ogImageUrl = await uploadImage(ogImage, "og");
-      }
+      if (image)
+        imageUrl = await uploadImage(await convertToJpeg(image), "featured");
+      if (ogImage)
+        ogImageUrl = await uploadImage(await convertToJpeg(ogImage), "og");
 
       // Insert to DB (adjust schema as needed)
       const { error: insertError } = await supabase.from("articles").insert([
@@ -691,8 +692,9 @@ export default function CreateArticlePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F1F4F9] py-12 px-4 md:px-8 font-['Rethink_Sans']">
-      <style>{`
+    <AdminGuard>
+      <div className="min-h-screen bg-[#F1F4F9] py-12 px-4 md:px-8 font-['Rethink_Sans']">
+        <style>{`
         .rich-content-editor:empty:before {
           content: attr(data-placeholder);
           color: #94a3b8;
@@ -721,428 +723,318 @@ export default function CreateArticlePage() {
         .rich-content-editor a { color: #067F76; text-decoration: underline; }
       `}</style>
 
-      <div className="max-w-4xl mx-auto mt-[120px]">
-        <Link
-          href="/admin/dashboard"
-          className="inline-flex items-center gap-2 text-[#023B37] font-semibold mb-6 hover:underline"
-        >
-          <ArrowLeft size={18} /> Back to Dashboard
-        </Link>
+        <div className="max-w-4xl mx-auto mt-[120px]">
+          <Link
+            href="/admin/dashboard"
+            className="inline-flex items-center gap-2 text-[#023B37] font-semibold mb-6 hover:underline"
+          >
+            <ArrowLeft size={18} /> Back to Dashboard
+          </Link>
 
-        <motion.form
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
-          <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="p-3 bg-[#067F76]/10 text-[#067F76] rounded-2xl">
-                <Save />
-              </div>
-              <h1 className="text-2xl font-bold text-slate-900">
-                Create New Article
-              </h1>
-            </div>
-
-            <div className="space-y-6">
-              {/* Title */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
-                  Article Title <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  required
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="e.g. Understanding ADHD in Adults"
-                  className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none focus:border-[#067F76]"
-                />
+          <motion.form
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            onSubmit={handleSubmit}
+            className="space-y-6"
+          >
+            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="p-3 bg-[#067F76]/10 text-[#067F76] rounded-2xl">
+                  <Save />
+                </div>
+                <h1 className="text-2xl font-bold text-slate-900">
+                  Create New Article
+                </h1>
               </div>
 
-              {/* Slug */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
-                  URL Slug <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="slug"
-                  value={formData.slug}
-                  onChange={handleSlugChange}
-                  placeholder="your-article-title"
-                  className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none focus:border-[#067F76]"
-                />
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Category */}
+              <div className="space-y-6">
+                {/* Title */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
-                    Category
+                    Article Title <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    name="category"
-                    value={formData.category}
+                    name="title"
+                    required
+                    value={formData.title}
                     onChange={handleChange}
+                    placeholder="e.g. Understanding ADHD in Adults"
+                    className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none focus:border-[#067F76]"
+                  />
+                </div>
+
+                {/* Slug */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                    URL Slug <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="slug"
+                    value={formData.slug}
+                    onChange={handleSlugChange}
+                    placeholder="your-article-title"
+                    className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none focus:border-[#067F76]"
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Category */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                      Category
+                    </label>
+                    <input
+                      type="text"
+                      name="category"
+                      value={formData.category}
+                      onChange={handleChange}
+                      className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
+                    />
+                  </div>
+
+                  {/* Featured Image */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                      Featured Image
+                    </label>
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="cursor-pointer flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-[#067F76]"
+                    >
+                      <ImageIcon className="text-slate-400" size={24} />
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageChange(e, false)}
+                        className="hidden"
+                      />
+                      <span className="text-sm text-slate-600">
+                        {imagePreview
+                          ? "Change Image"
+                          : "Upload Featured Image"}
+                      </span>
+                    </div>
+                    {imagePreview && (
+                      <img
+                        src={imagePreview}
+                        alt="preview"
+                        className="mt-3 rounded-xl max-h-48 object-cover w-full"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* Excerpt */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                    Excerpt (Summary) <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="excerpt"
+                    required
+                    value={formData.excerpt}
+                    onChange={handleChange}
+                    rows={3}
+                    placeholder="A short preview..."
                     className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
                   />
                 </div>
 
-                {/* Featured Image */}
+                {/* Rich Editor */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
-                    Featured Image
+                    Content <span className="text-red-500">*</span>
                   </label>
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="cursor-pointer flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-[#067F76]"
-                  >
-                    <ImageIcon className="text-slate-400" size={24} />
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageChange(e, false)}
-                      className="hidden"
-                    />
-                    <span className="text-sm text-slate-600">
-                      {imagePreview ? "Change Image" : "Upload Featured Image"}
-                    </span>
-                  </div>
-                  {imagePreview && (
-                    <img
-                      src={imagePreview}
-                      alt="preview"
-                      className="mt-3 rounded-xl max-h-48 object-cover w-full"
-                    />
+                  <RichTextEditor
+                    value={formData.content}
+                    onChange={(html) =>
+                      setFormData((prev) => ({ ...prev, content: html }))
+                    }
+                    stickyTopOffset={96} // match your nav height
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* SEO Section - Blended styles */}
+            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-6">
+                <Search size={20} /> SEO & Metadata
+              </h2>
+              <div className="space-y-5">
+                <input
+                  type="text"
+                  name="metaTitle"
+                  value={formData.metaTitle}
+                  onChange={handleMetaTitleChange}
+                  placeholder="Meta Title (auto-generated from title)"
+                  className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
+                />
+                <textarea
+                  name="metaDescription"
+                  value={formData.metaDescription}
+                  onChange={handleMetaDescChange}
+                  rows={2}
+                  placeholder="Meta Description (auto from excerpt)"
+                  className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
+                />
+                <input
+                  type="url"
+                  name="canonicalUrl"
+                  value={formData.canonicalUrl}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      canonicalUrl: e.target.value,
+                    }))
+                  }
+                  placeholder="Canonical URL (auto-generated)"
+                  className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
+                />
+              </div>
+            </div>
+
+            {/* OG Image and Structured Data */}
+            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 space-y-6">
+              {/* OG Image */}
+              <div>
+                <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5 mb-2">
+                  <Globe size={16} /> Open Graph Social Cover Image
+                </label>
+                <div
+                  onClick={() => ogInputRef.current?.click()}
+                  className="border border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:border-[#067F76]"
+                >
+                  <input
+                    ref={ogInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageChange(e, true)}
+                    className="hidden"
+                  />
+                  {ogPreview ? (
+                    <div className="relative h-48 rounded-xl overflow-hidden">
+                      <img
+                        src={ogPreview}
+                        alt="OG"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => ogInputRef.current?.click()}
+                        className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-sm"
+                      >
+                        Change
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-slate-500">
+                      Upload OG Image (1200x630 recommended)
+                    </p>
                   )}
                 </div>
               </div>
 
-              {/* Excerpt */}
+              {/* Structured Data */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
-                  Excerpt (Summary) <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  name="excerpt"
-                  required
-                  value={formData.excerpt}
-                  onChange={handleChange}
-                  rows={3}
-                  placeholder="A short preview..."
-                  className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
-                />
-              </div>
-
-              {/* Rich Editor */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
-                  Content <span className="text-red-500">*</span>
-                </label>
-                <div className="sticky top-0 z-20 flex flex-wrap items-center gap-2 p-3 mb-3 bg-slate-100 rounded-xl border border-slate-200 shadow-sm">
-                  {/* Toolbar similar to first + second */}
-                  <div className="flex gap-1 pr-3 border-r border-slate-300">
-                    <button
-                      type="button"
-                      onClick={() => exec("undo")}
-                      className="p-2 hover:bg-white rounded-lg"
-                      title="Undo"
-                    >
-                      <Undo size={18} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => exec("redo")}
-                      className="p-2 hover:bg-white rounded-lg"
-                      title="Redo"
-                    >
-                      <Redo size={18} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={removeFormatting}
-                      className="p-2 hover:bg-white rounded-lg"
-                      title="Clear Formatting"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-1 pr-3 border-r border-slate-300">
-                    <select
-                      value={currentFontSize}
-                      onChange={(e) => handleFontSizeChange(e.target.value)}
-                      className="bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-[#067F76]"
-                    >
-                      {fontSizes.map((size) => (
-                        <option key={size} value={size}>
-                          {size}px
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex items-center gap-1 pr-3 border-r border-slate-300">
-                    <select
-                      value={currentLineHeight}
-                      onChange={(e) => applyLineHeight(e.target.value)}
-                      className="bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-[#067F76]"
-                    >
-                      {lineHeights.map((lh) => (
-                        <option key={lh.value} value={lh.value}>
-                          ↕ {lh.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex gap-1 pr-3 border-r border-slate-300">
-                    <label
-                      className="cursor-pointer p-2 hover:bg-white rounded-lg"
-                      title="Text Color"
-                    >
-                      <Palette size={18} />
-                      <input
-                        type="color"
-                        onChange={(e) => applyStyle("color", e.target.value)}
-                        className="hidden"
-                      />
-                    </label>
-                    <label
-                      className="cursor-pointer p-2 hover:bg-white rounded-lg"
-                      title="Highlight"
-                    >
-                      <Highlighter size={18} />
-                      <input
-                        type="color"
-                        onChange={(e) =>
-                          applyStyle("background-color", e.target.value)
-                        }
-                        className="hidden"
-                      />
-                    </label>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1">
-                    {toolbarButtons.map((btn, index) => {
-                      const isActive = btn.key
-                        ? activeFormats.has(btn.key)
-                        : false;
-                      return (
-                        <button
-                          key={index}
-                          type="button"
-                          title={btn.label}
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={btn.action}
-                          className={`p-2 rounded-lg transition-colors ${
-                            isActive
-                              ? "bg-[#067F76] text-white shadow-sm"
-                              : "text-slate-600 hover:bg-white hover:text-[#067F76] hover:shadow-sm"
-                          }`}
-                        >
-                          {btn.icon}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div
-                  ref={contentRef}
-                  contentEditable
-                  suppressContentEditableWarning
-                  onInput={handleContentInput}
-                  onKeyUp={updateActiveFormats}
-                  onMouseUp={updateActiveFormats}
-                  onClick={updateActiveFormats}
-                  data-placeholder="Write your article here..."
-                  className="rich-content-editor w-full min-h-[400px] p-6 bg-white rounded-2xl border border-slate-200 outline-none focus:border-[#067F76] text-base leading-relaxed"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* SEO Section - Blended styles */}
-          <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
-            <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-6">
-              <Search size={20} /> SEO & Metadata
-            </h2>
-            <div className="space-y-5">
-              <input
-                type="text"
-                name="metaTitle"
-                value={formData.metaTitle}
-                onChange={handleMetaTitleChange}
-                placeholder="Meta Title (auto-generated from title)"
-                className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
-              />
-              <textarea
-                name="metaDescription"
-                value={formData.metaDescription}
-                onChange={handleMetaDescChange}
-                rows={2}
-                placeholder="Meta Description (auto from excerpt)"
-                className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
-              />
-              <input
-                type="url"
-                name="canonicalUrl"
-                value={formData.canonicalUrl}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    canonicalUrl: e.target.value,
-                  }))
-                }
-                placeholder="Canonical URL (auto-generated)"
-                className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none"
-              />
-            </div>
-          </div>
-
-          {/* OG Image and Structured Data */}
-          <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 space-y-6">
-            {/* OG Image */}
-            <div>
-              <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5 mb-2">
-                <Globe size={16} /> Open Graph Social Cover Image
-              </label>
-              <div
-                onClick={() => ogInputRef.current?.click()}
-                className="border border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:border-[#067F76]"
-              >
-                <input
-                  ref={ogInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageChange(e, true)}
-                  className="hidden"
-                />
-                {ogPreview ? (
-                  <div className="relative h-48 rounded-xl overflow-hidden">
-                    <img
-                      src={ogPreview}
-                      alt="OG"
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => ogInputRef.current?.click()}
-                      className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-sm"
-                    >
-                      Change
-                    </button>
-                  </div>
-                ) : (
-                  <p className="text-slate-500">
-                    Upload OG Image (1200x630 recommended)
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Structured Data */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="flex items-center gap-2 text-lg font-bold">
-                  <Edit3 size={20} /> Structured Data (Schema.org)
-                </h3>
-                <button
-                  type="button"
-                  onClick={resetToAutoStructured}
-                  className="text-sm text-[#067F76] hover:underline"
-                >
-                  Reset to Auto
-                </button>
-              </div>
-              <textarea
-                ref={structuredDataRef}
-                value={formData.structuredData}
-                onChange={handleStructuredDataChange}
-                className="w-full h-80 font-mono text-sm p-4 bg-slate-900 text-slate-100 rounded-2xl border border-slate-700 outline-none resize-y"
-                spellCheck={false}
-              />
-            </div>
-          </div>
-
-          {error && (
-            <p className="text-red-600 text-center font-medium">{error}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#023B37] hover:bg-[#067F76] text-white py-5 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-70"
-          >
-            {loading ? (
-              <Loader2 className="animate-spin" size={24} />
-            ) : (
-              <>
-                <Save size={22} /> Publish Article
-              </>
-            )}
-          </button>
-        </motion.form>
-      </div>
-
-      {/* Modal */}
-      <AnimatePresence>
-        {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black"
-              onClick={handleModalClose}
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative bg-white rounded-3xl p-8 max-w-md w-full text-center z-10"
-            >
-              {modalType === "success" ? (
-                <>
-                  <CheckCircle className="mx-auto h-16 w-16 text-green-600 mb-6" />
-                  <h3 className="text-2xl font-bold text-[#067F76] mb-2">
-                    Article Published!
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="flex items-center gap-2 text-lg font-bold">
+                    <Edit3 size={20} /> Structured Data (Schema.org)
                   </h3>
-                  <p className="text-gray-600 mb-8">
-                    Your article is now live.
-                  </p>
                   <button
-                    onClick={handleModalClose}
-                    className="w-full py-3 bg-[#067F76] text-white rounded-2xl font-semibold"
+                    type="button"
+                    onClick={resetToAutoStructured}
+                    className="text-sm text-[#067F76] hover:underline"
                   >
-                    Go to Dashboard
+                    Reset to Auto
                   </button>
-                </>
+                </div>
+                <textarea
+                  ref={structuredDataRef}
+                  value={formData.structuredData}
+                  onChange={handleStructuredDataChange}
+                  className="w-full h-80 font-mono text-sm p-4 bg-slate-900 text-slate-100 rounded-2xl border border-slate-700 outline-none resize-y"
+                  spellCheck={false}
+                />
+              </div>
+            </div>
+
+            {error && (
+              <p className="text-red-600 text-center font-medium">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#023B37] hover:bg-[#067F76] text-white py-5 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-70"
+            >
+              {loading ? (
+                <Loader2 className="animate-spin" size={24} />
               ) : (
                 <>
-                  <XCircle className="mx-auto h-16 w-16 text-red-600 mb-6" />
-                  <h3 className="text-2xl font-bold text-red-600 mb-2">
-                    Error
-                  </h3>
-                  <p className="text-gray-600 mb-8">{apiError}</p>
-                  <button
-                    onClick={handleModalClose}
-                    className="w-full py-3 bg-slate-800 text-white rounded-2xl font-semibold"
-                  >
-                    Try Again
-                  </button>
+                  <Save size={22} /> Publish Article
                 </>
               )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </div>
+            </button>
+          </motion.form>
+        </div>
+
+        {/* Modal */}
+        <AnimatePresence>
+          {showModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.5 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black"
+                onClick={handleModalClose}
+              />
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="relative bg-white rounded-3xl p-8 max-w-md w-full text-center z-10"
+              >
+                {modalType === "success" ? (
+                  <>
+                    <CheckCircle className="mx-auto h-16 w-16 text-green-600 mb-6" />
+                    <h3 className="text-2xl font-bold text-[#067F76] mb-2">
+                      Article Published!
+                    </h3>
+                    <p className="text-gray-600 mb-8">
+                      Your article is now live.
+                    </p>
+                    <button
+                      onClick={handleModalClose}
+                      className="w-full py-3 bg-[#067F76] text-white rounded-2xl font-semibold"
+                    >
+                      Go to Dashboard
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="mx-auto h-16 w-16 text-red-600 mb-6" />
+                    <h3 className="text-2xl font-bold text-red-600 mb-2">
+                      Error
+                    </h3>
+                    <p className="text-gray-600 mb-8">{apiError}</p>
+                    <button
+                      onClick={handleModalClose}
+                      className="w-full py-3 bg-slate-800 text-white rounded-2xl font-semibold"
+                    >
+                      Try Again
+                    </button>
+                  </>
+                )}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+    </AdminGuard>
   );
 }

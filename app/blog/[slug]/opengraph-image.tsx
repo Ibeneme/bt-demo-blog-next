@@ -1,8 +1,11 @@
+// app/blog/[slug]/og/route.tsx   (or wherever this file is located)
+
 import { ImageResponse } from "next/og";
 import { supabase } from "../../../configs/supabase";
+
 export const runtime = "edge";
 
-export const alt = "Blessing Attorney Blog Post Card";
+export const alt = "ARIAD Psychological Services Blog Post";
 export const size = {
   width: 1200,
   height: 630,
@@ -19,10 +22,10 @@ export default async function Image({ params }: Props) {
   const { slug } = params;
 
   console.log(
-    `[OG_IMAGE_GENERATOR] ➡️ Initiating dynamic render sequence for slug: "${slug}"`
+    `[OG_IMAGE_GENERATOR] ➡️ Generating dynamic OG image for slug: "${slug}"`
   );
 
-  // Querying Supabase content cluster
+  // Fetch article data from Supabase
   const { data: currentArticle, error } = await supabase
     .from("articles")
     .select("title, category, image_url")
@@ -31,23 +34,19 @@ export default async function Image({ params }: Props) {
 
   if (error || !currentArticle) {
     console.error(
-      "[OG_IMAGE_GENERATOR] ❌ Failed to fetch database data context node:",
+      "[OG_IMAGE_GENERATOR] ❌ Failed to fetch article data:",
       error?.message
     );
     return new Response(
-      "Article data could not be fetched for layout design synthesis.",
+      "Article data could not be fetched for OG image generation.",
       { status: 404 }
     );
   }
 
-  console.log(
-    "[OG_IMAGE_GENERATOR] ✅ Successfully pulled live dataset parameters:",
-    {
-      title: currentArticle.title,
-      category: currentArticle.category,
-      image_url: currentArticle.image_url,
-    }
-  );
+  console.log("[OG_IMAGE_GENERATOR] ✅ Article data loaded successfully:", {
+    title: currentArticle.title,
+    category: currentArticle.category,
+  });
 
   return new ImageResponse(
     (
@@ -57,12 +56,12 @@ export default async function Image({ params }: Props) {
           width: "100%",
           display: "flex",
           position: "relative",
-          backgroundColor: "#4F2A7E", // Deep purple brand primary
+          backgroundColor: "#023B37", // ARIAD Brand Dark Teal
           fontFamily: "sans-serif",
           overflow: "hidden",
         }}
       >
-        {/* 1. RIGHT SIDE: Full-bleed main post image taken directly from image_url column schema */}
+        {/* RIGHT SIDE: Article Image */}
         <img
           src={currentArticle.image_url}
           alt={currentArticle.title}
@@ -70,24 +69,24 @@ export default async function Image({ params }: Props) {
             position: "absolute",
             right: 0,
             top: 0,
-            width: "65%", // Spans across the right section side layout
+            width: "65%",
             height: "100%",
             objectFit: "cover",
           }}
         />
 
-        {/* 2. BACKGROUND OVERLAY GRADIENT: Smooth blend from brand purple into the article's image_url */}
+        {/* Gradient Overlay */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             display: "flex",
             background:
-              "linear-gradient(to right, #4F2A7E 0%, #4F2A7E 45%, rgba(79, 42, 126, 0.85) 55%, rgba(79, 42, 126, 0.1) 100%)",
+              "linear-gradient(to right, #023B37 0%, #023B37 45%, rgba(2, 59, 55, 0.85) 55%, rgba(2, 59, 55, 0.1) 100%)",
           }}
         />
 
-        {/* 3. FOREGROUND CONTENT WRAPPER */}
+        {/* Foreground Content */}
         <div
           style={{
             position: "relative",
@@ -100,33 +99,33 @@ export default async function Image({ params }: Props) {
             padding: "60px 80px",
           }}
         >
-          {/* TOP SECTION: Category Pillar Tag */}
+          {/* Category Tag */}
           <div
             style={{
               display: "flex",
-              padding: "8px 22px",
+              padding: "8px 24px",
               borderRadius: "30px",
-              backgroundColor: "#D4AF37", // Blessing Attorney Brand Gold
-              color: "#4F2A7E",
+              backgroundColor: "#067F76", // ARIAD Accent Teal
+              color: "#ffffff",
               fontSize: "18px",
               fontWeight: "bold",
               textTransform: "uppercase",
-              letterSpacing: "0.05em",
+              letterSpacing: "0.08em",
               alignSelf: "flex-start",
             }}
           >
-            {currentArticle.category || "Corporate Law"}
+            {currentArticle.category || "Psychological Insights"}
           </div>
 
-          {/* MIDDLE SECTION: Floating High-Contrast Title Box Component Container */}
+          {/* Title Card */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              backgroundColor: "rgba(255, 255, 255, 0.98)", // Solid high-contrast white card overlay frame
+              backgroundColor: "rgba(255, 255, 255, 0.98)",
               padding: "40px",
               borderRadius: "20px",
-              width: "58%", // Constrained width boundary so typography doesn't overlay image subjects
+              width: "58%",
               boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.4)",
               marginTop: "auto",
               marginBottom: "auto",
@@ -136,8 +135,8 @@ export default async function Image({ params }: Props) {
               style={{
                 fontSize: "44px",
                 fontWeight: 800,
-                color: "#111827", // Neutral Slate Gray tone variant for pristine legibility
-                lineHeight: 1.3,
+                color: "#023B37",
+                lineHeight: 1.25,
                 margin: 0,
               }}
             >
@@ -145,35 +144,35 @@ export default async function Image({ params }: Props) {
             </h1>
           </div>
 
-          {/* BOTTOM SECTION: Branding Divider bar */}
+          {/* Footer Branding */}
           <div
             style={{
               display: "flex",
               width: "100%",
               alignItems: "center",
               justifyContent: "space-between",
-              borderTop: "1px solid rgba(255, 255, 255, 0.25)",
+              borderTop: "1px solid rgba(255, 255, 255, 0.3)",
               paddingTop: "24px",
             }}
           >
             <span
               style={{
-                fontSize: "26px",
+                fontSize: "28px",
                 fontWeight: "bold",
                 color: "#ffffff",
                 letterSpacing: "0.5px",
               }}
             >
-              Blessing Attorney
+              ARIAD
             </span>
             <span
               style={{
                 fontSize: "18px",
-                color: "#F3F4F6",
+                color: "#E0F2F1",
                 fontWeight: 500,
               }}
             >
-              Legal Insights & Publications
+              Psychological Services
             </span>
           </div>
         </div>
