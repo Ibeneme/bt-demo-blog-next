@@ -8,13 +8,21 @@ export const metadata: Metadata = {
   description:
     "Visit ARIAD Psychological Services in Dallas, Texas. Expert, confidential autism (ASD) testing, ADHD evaluations, and psychoeducational assessments.",
   alternates: {
+<<<<<<< HEAD
     canonical: "https://ariadpsychservices.com/locations/dallas",
+=======
+    canonical: "https://ariad-sooty.vercel.app/locations/dallas",
+>>>>>>> feature/improved-dashboard
   },
   openGraph: {
     title: "Neuropsychological Evaluations in Dallas, TX | ARIAD Psychological",
     description:
       "Expert diagnostic testing for ADHD, Autism, and learning exceptionalities in Dallas.",
+<<<<<<< HEAD
     url: "https://ariadpsychservices.com/locations/dallas",
+=======
+    url: "https://ariad-sooty.vercel.app/locations/dallas",
+>>>>>>> feature/improved-dashboard
     type: "website",
   },
 };
@@ -25,9 +33,15 @@ export default function DallasOfficePage() {
     "@context": "https://schema.org",
     "@type": "MedicalBusiness",
     name: "ARIAD Psychological Services - Dallas Hub",
+<<<<<<< HEAD
     image: "https://ariadpsychservices.com/images/logo_a.png", // update with your true domain asset path
     "@id": "https://ariadpsychservices.com/locations/dallas",
     url: "https://ariadpsychservices.com/locations/dallas",
+=======
+    image: "https://ariad-sooty.vercel.app/images/logo_a.png", // update with your true domain asset path
+    "@id": "https://ariad-sooty.vercel.app/locations/dallas",
+    url: "https://ariad-sooty.vercel.app/locations/dallas",
+>>>>>>> feature/improved-dashboard
     telephone: "+1-469-733-9976",
     address: {
       "@type": "PostalAddress",

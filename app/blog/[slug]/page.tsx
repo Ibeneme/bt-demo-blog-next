@@ -1,10 +1,24 @@
 // app/blog/[slug]/page.tsx
 
+<<<<<<< HEAD
 import { supabase } from "@/lib/configs/supabase";
+=======
+import { supabase } from "../../../configs/supabase";
+>>>>>>> feature/improved-dashboard
 import BlogDetailsClient from "./BlogDetailsClient";
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+  "https://bt-demo-blog.vercel.app";
+const SITE_NAME = "ARIAD Psychological Services";
+// Make sure this file actually exists in /public (not /assests typo, not a relative import path)
+const DEFAULT_OG_IMAGE = `${SITE_URL}/favicon.png`;
+
 // ✅ DYNAMIC METADATA (Server Component)
+<<<<<<< HEAD
 // app/blog/[slug]/page.tsx
+=======
+>>>>>>> feature/improved-dashboard
 export async function generateMetadata({
   params,
 }: {
@@ -21,10 +35,12 @@ export async function generateMetadata({
 
     if (!article) {
       return {
-        title: "Article Not Found | Blessing Attorney",
+        title: `Article Not Found | ${SITE_NAME}`,
+        robots: { index: false, follow: false },
       };
     }
 
+<<<<<<< HEAD
     const imageUrl =
       article.image_url || "https://bt-demo-blog.vercel.app/default-og.jpg";
     const pageUrl = `https://bt-demo-blog.vercel.app/blog/${slug}`;
@@ -33,33 +49,59 @@ export async function generateMetadata({
       title: `${article.title} | Blessing Attorney`,
       description:
         article.excerpt || "Expert legal insights from Blessing Attorney",
+=======
+    const title = article.title;
+    const description =
+      article.excerpt?.trim() ||
+      `Expert psychological insights from ${SITE_NAME}`;
+
+    // image_url from Supabase storage is already absolute — but guard anyway
+    // in case it's ever stored as a relative path.
+    const imageUrl = article.image_url
+      ? article.image_url.startsWith("http")
+        ? article.image_url
+        : `${SITE_URL}${article.image_url.startsWith("/") ? "" : "/"}${
+            article.image_url
+          }`
+      : DEFAULT_OG_IMAGE;
+
+    const pageUrl = `${SITE_URL}/blog/${slug}`;
+
+    return {
+      metadataBase: new URL(SITE_URL),
+      title: `${title} | ${SITE_NAME}`,
+      description,
+      alternates: {
+        canonical: pageUrl,
+      },
+>>>>>>> feature/improved-dashboard
       openGraph: {
-        title: article.title,
-        description: article.excerpt,
+        title,
+        description,
         url: pageUrl,
-        siteName: "Blessing Attorney",
+        siteName: SITE_NAME,
+        type: "article",
+        locale: "en_US",
         images: [
           {
             url: imageUrl,
             width: 1200,
             height: 630,
-            alt: article.title,
+            alt: title,
           },
         ],
-        type: "article",
-        publishedTime: new Date().toISOString(), // optional
       },
       twitter: {
         card: "summary_large_image",
-        title: article.title,
-        description: article.excerpt,
+        title,
+        description,
         images: [imageUrl],
       },
     };
   } catch (err) {
     console.error("Metadata error:", err);
     return {
-      title: "Blessing Attorney Blog",
+      title: `${SITE_NAME} Blog`,
     };
   }
 }
@@ -70,8 +112,18 @@ export default async function BlogDetailsPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+<<<<<<< HEAD
   const { slug } = await params; // ← Important fix
   console.log("🔹 BlogDetailsPage server component - slug:", slug);
 
   return <BlogDetailsClient slug={slug} />;
+=======
+  const { slug } = await params;
+
+  return (
+    <>
+      <BlogDetailsClient slug={slug} />
+    </>
+  );
+>>>>>>> feature/improved-dashboard
 }

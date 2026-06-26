@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
  
 const nextConfig: NextConfig = {
+<<<<<<< HEAD
 
   images: {
     remotePatterns: [
@@ -22,3 +23,22 @@ const nextConfig: NextConfig = {
  
 export default nextConfig;
  
+=======
+  output: 'standalone',
+
+  // ✅ Move turbopack to the top level
+  turbopack: {
+    root: '.',
+  },
+
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "*.supabase.co" },
+      { protocol: "https", hostname: "*.supabase.in" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+    ],
+  },
+};
+
+export default nextConfig;
+>>>>>>> feature/improved-dashboard
